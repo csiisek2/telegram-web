@@ -656,8 +656,7 @@ const AdminPage = () => {
                                     ) : <div style={{ width: '50px', height: '50px', background: '#eee' }}></div>}
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <input type="text" value={room.name} onChange={(e) => handleRoomChange(index, 'name', e.target.value)} placeholder="방 이름" style={styles.inputSmall} />
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                         {room.isPinned && (
                                             <span style={{
                                                 backgroundColor: '#f39c12',
@@ -666,13 +665,15 @@ const AdminPage = () => {
                                                 borderRadius: '8px',
                                                 fontSize: '9px',
                                                 fontWeight: 'bold',
-                                                whiteSpace: 'nowrap'
+                                                whiteSpace: 'nowrap',
+                                                flexShrink: 0
                                             }}>
                                                 추천
                                             </span>
                                         )}
-                                        <input type="text" value={room.desc} onChange={(e) => handleRoomChange(index, 'desc', e.target.value)} placeholder="설명" style={styles.inputSmall} />
+                                        <input type="text" value={room.name} onChange={(e) => handleRoomChange(index, 'name', e.target.value)} placeholder="방 이름" style={{ ...styles.inputSmall, flex: 1 }} />
                                     </div>
+                                    <input type="text" value={room.desc} onChange={(e) => handleRoomChange(index, 'desc', e.target.value)} placeholder="설명" style={styles.inputSmall} />
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                     <input type="number" value={room.members} onChange={(e) => handleRoomChange(index, 'members', Number(e.target.value))} placeholder="인원수" style={styles.inputSmall} />
