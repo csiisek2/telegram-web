@@ -150,7 +150,7 @@ const Header = () => {
           >
             자유게시판
           </a>
-          <a href="https://t.me/dosal7777" target="_blank" rel="noopener noreferrer" style={styles.navLink}>고객센터</a>
+          <a href="https://t.me/xdev90" target="_blank" rel="noopener noreferrer" style={styles.navLink}>고객센터</a>
         </nav>
       </div>
     </header>

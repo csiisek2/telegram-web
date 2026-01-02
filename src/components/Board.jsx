@@ -17,6 +17,7 @@ const Board = ({ boardTitle = '자유게시판', boardCategory = '자유', id, p
     // Map category names
     const categoryMap = {
         '자유': 'free',
+        '사기': 'scammer',
         '사기꾼': 'scammer'
     };
 
