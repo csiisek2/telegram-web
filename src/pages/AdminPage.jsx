@@ -310,16 +310,24 @@ const AdminPage = () => {
                 link: '#',
                 image: '',
                 isPinned: false,
-                display_order: 0
+                display_order: 999
             };
             await addRoomAPI(newRoomData);
             await fetchAllData();
             showToast('새 홍보방이 추가되었습니다!');
 
-            // 맨 아래로 스크롤
+            // DOM이 업데이트된 후 리스트의 마지막 항목으로 스크롤
             setTimeout(() => {
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            }, 100);
+                const sections = document.querySelectorAll('section');
+                const roomSection = Array.from(sections).find(s => s.textContent.includes('추천 홍보방 관리'));
+                if (roomSection) {
+                    const listItems = roomSection.querySelectorAll('[style*="flex"][style*="gap"]');
+                    if (listItems.length > 0) {
+                        const lastItem = listItems[listItems.length - 1];
+                        lastItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            }, 300);
         } catch (error) {
             console.error('추가 실패:', error);
             showToast('추가에 실패했습니다.', 'error');
