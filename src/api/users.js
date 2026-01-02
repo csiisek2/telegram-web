@@ -1,4 +1,3 @@
-```javascript
 import { supabase } from '../lib/supabase';
 
 // Get all users from channels table
@@ -15,7 +14,7 @@ export const getAllUsers = async () => {
         // Remove duplicates by user_id
         const uniqueUsers = [];
         const seenIds = new Set();
-        
+
         if (data) {
             data.forEach(channel => {
                 if (channel.user_id && !seenIds.has(channel.user_id)) {
