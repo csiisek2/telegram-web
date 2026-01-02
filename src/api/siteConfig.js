@@ -236,6 +236,29 @@ export const updateAllRightBanners = async (banners) => {
     }
 };
 
+export const addRightBanner = async (bannerData) => {
+    try {
+        const { data, error } = await supabase
+            .from('site_config')
+            .insert([{
+                type: 'right_banner',
+                name: bannerData.title,
+                description: bannerData.text,
+                image_url: bannerData.image,
+                link: bannerData.link,
+                display_order: bannerData.display_order || 0,
+                created_at: new Date().toISOString()
+            }])
+            .select();
+
+        if (error) throw error;
+        return data[0];
+    } catch (error) {
+        console.error('addRightBanner error:', error);
+        throw error;
+    }
+};
+
 export const deleteRightBanner = async (id) => {
     try {
         const { error } = await supabase

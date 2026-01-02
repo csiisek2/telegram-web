@@ -7,6 +7,7 @@ import {
     updateAllRooms,
     updateAllRightBanners,
     addRoom as addRoomAPI,
+    addRightBanner as addRightBannerAPI,
     deleteRoom as deleteRoomAPI,
     deleteBanner,
     deleteRightBanner,
@@ -328,6 +329,27 @@ const AdminPage = () => {
             setTimeout(() => {
                 window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             }, 100);
+        } catch (error) {
+            console.error('추가 실패:', error);
+            showToast('추가에 실패했습니다.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const addRightBanner = async () => {
+        setLoading(true);
+        try {
+            const newBannerData = {
+                title: '새 배너',
+                text: '설명 입력',
+                image: '',
+                link: '#',
+                display_order: 0
+            };
+            await addRightBannerAPI(newBannerData);
+            await fetchAllData();
+            showToast('새 우측 배너가 추가되었습니다!');
         } catch (error) {
             console.error('추가 실패:', error);
             showToast('추가에 실패했습니다.', 'error');
@@ -708,6 +730,7 @@ const AdminPage = () => {
 
             <section style={styles.section}>
                 <h2>3. 우측 사이드바 (스페셜 업소) 관리</h2>
+                <button onClick={addRightBanner} style={styles.addBtn}>+ 새 배너 추가</button>
 
                 <div style={{ marginBottom: '20px' }}>
                     <label style={styles.label}>우측 배너 선택:</label>
