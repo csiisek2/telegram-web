@@ -656,7 +656,7 @@ const AdminPage = () => {
                                     ) : <div style={{ width: '50px', height: '50px', background: '#eee' }}></div>}
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
                                         {room.isPinned && (
                                             <span style={{
                                                 backgroundColor: '#f39c12',
@@ -665,12 +665,13 @@ const AdminPage = () => {
                                                 borderRadius: '12px',
                                                 fontSize: '11px',
                                                 fontWeight: 'bold',
-                                                whiteSpace: 'nowrap'
+                                                whiteSpace: 'nowrap',
+                                                flexShrink: 0
                                             }}>
                                                 추천 채널
                                             </span>
                                         )}
-                                        <input type="text" value={room.name} onChange={(e) => handleRoomChange(index, 'name', e.target.value)} placeholder="방 이름" style={{ ...styles.inputSmall, flex: 1 }} />
+                                        <input type="text" value={room.name} onChange={(e) => handleRoomChange(index, 'name', e.target.value)} placeholder="방 이름" style={{ ...styles.inputSmall, flex: 1, minWidth: '0' }} />
                                     </div>
                                     <input type="text" value={room.desc} onChange={(e) => handleRoomChange(index, 'desc', e.target.value)} placeholder="설명" style={styles.inputSmall} />
                                 </div>
