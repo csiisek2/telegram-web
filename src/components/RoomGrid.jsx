@@ -10,6 +10,7 @@ const RoomGrid = () => {
     // 1. [사용자 + 관리자 설정] Supabase에서 데이터 가져오기
     const [manualItems, setManualItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [shuffleTrigger, setShuffleTrigger] = useState(0);
 
     useEffect(() => {
         const fetchRooms = async () => {
@@ -23,6 +24,15 @@ const RoomGrid = () => {
             }
         };
         fetchRooms();
+    }, []);
+
+    // 5분마다 랜덤 셔플 트리거
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setShuffleTrigger(prev => prev + 1);
+        }, 5 * 60 * 1000); // 5분 = 300,000ms
+
+        return () => clearInterval(interval);
     }, []);
 
     // 2. [자동 생성] 테스트를 위해 대량의 데이터를 자동으로 만듭니다.
