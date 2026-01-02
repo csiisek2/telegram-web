@@ -1,6 +1,7 @@
 
 import React from 'react';
 import MainBanner from '../components/MainBanner';
+import RoomGrid from '../components/RoomGrid';
 import AdTextSection from '../components/AdTextSection';
 import Board from '../components/Board';
 
@@ -9,6 +10,7 @@ const Home = () => {
         <>
             <div id="home">
                 <MainBanner />
+                <RoomGrid />
                 <AdTextSection />
             </div>
             {/*

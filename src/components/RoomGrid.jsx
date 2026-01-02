@@ -5,7 +5,7 @@ import { getRooms, convertRoomsFromDB } from '../api/siteConfig';
 const RoomGrid = () => {
     const [searchParams] = useSearchParams();
     const searchTerm = searchParams.get('search') || '';
-    const ITEMS_PER_PAGE = 10; // 오른쪽 사이드바용으로 줄임
+    const ITEMS_PER_PAGE = 21;
 
     // 1. [사용자 + 관리자 설정] Supabase에서 데이터 가져오기
     const [manualItems, setManualItems] = useState([]);
@@ -93,7 +93,7 @@ const RoomGrid = () => {
     };
 
     return (
-        <div style={{ marginBottom: '20px' }}>
+        <div className="container" style={{ marginTop: '20px', marginBottom: '40px' }}>
             <div style={styles.titleContainer}>
                 <div className="section-title">추천 홍보방</div>
                 {searchTerm && (
@@ -117,6 +117,7 @@ const RoomGrid = () => {
                             style={styles.card}
                             onClick={() => room.link ? window.open(room.link, '_blank') : null}
                         >
+                            {room.isPinned && <span style={styles.badge}>추천 채널</span>}
                             {room.image ? (
                                 <div style={styles.imagePlaceholder}>
                                     {room.image.startsWith('data:video') ? (
@@ -131,10 +132,7 @@ const RoomGrid = () => {
                                 </div>
                             )}
                             <div style={styles.content}>
-                                <h3 style={styles.name}>
-                                    {room.name}
-                                    {room.isPinned && <span style={styles.badge}>추천 채널</span>}
-                                </h3>
+                                <h3 style={styles.name}>{room.name}</h3>
                                 <p style={styles.desc}>{room.desc}</p>
                                 <div style={styles.meta}>
                                     <span>👤 {room.members.toLocaleString()}명</span>
@@ -205,13 +203,14 @@ const styles = {
     },
     grid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)', // 2열 고정 (400px 사이드바에 맞춤)
-        gap: '12px',
-        marginBottom: '24px',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', // Responsive, approx 4 cols on desktop
+        gap: '16px',
+        marginBottom: '32px',
     },
     card: {
+        position: 'relative',
         backgroundColor: '#fff',
-        borderRadius: '8px',
+        borderRadius: '12px',
         overflow: 'hidden',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         transition: 'transform 0.2s, box-shadow 0.2s',
@@ -222,7 +221,7 @@ const styles = {
         }
     },
     imagePlaceholder: {
-        height: '100px', // 더 작게 조정
+        height: '140px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -233,35 +232,35 @@ const styles = {
         objectFit: 'cover',
     },
     content: {
-        padding: '8px',
+        padding: '12px',
     },
     name: {
-        fontSize: '13px',
+        fontSize: '15px',
         fontWeight: '700',
-        marginBottom: '3px',
+        marginBottom: '4px',
         color: 'var(--tg-text)',
     },
     desc: {
-        fontSize: '11px',
+        fontSize: '12px',
         color: 'var(--tg-text-secondary)',
-        marginBottom: '6px',
+        marginBottom: '8px',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
     },
     meta: {
-        fontSize: '10px',
+        fontSize: '11px',
         color: '#888',
-        marginBottom: '8px',
+        marginBottom: '10px',
     },
     button: {
         width: '100%',
-        padding: '6px',
+        padding: '8px',
         backgroundColor: '#eff7fd',
         color: 'var(--tg-primary)',
         fontWeight: '600',
-        borderRadius: '6px',
-        fontSize: '12px',
+        borderRadius: '8px',
+        fontSize: '13px',
         transition: 'background-color 0.2s',
     },
     pagination: {
@@ -283,13 +282,15 @@ const styles = {
         padding: '0 8px',
     },
     badge: {
+        position: 'absolute',
+        top: '8px',
+        right: '8px',
         backgroundColor: '#ffd700', // Gold
         color: '#000',
         fontSize: '11px',
         padding: '2px 5px',
         borderRadius: '4px',
-        marginRight: '6px',
-        verticalAlign: 'middle',
+        zIndex: 1,
     }
 };
 
