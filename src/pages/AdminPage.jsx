@@ -12,6 +12,11 @@ import {
     convertRoomsFromDB,
     convertRightBannersFromDB
 } from '../api/siteConfig';
+import {
+    getAllPosts,
+    deletePost,
+    togglePinPost
+} from '../api/posts';
 
 const AdminPage = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -22,6 +27,10 @@ const AdminPage = () => {
     const [banners, setBanners] = useState([]);
     const [rooms, setRooms] = useState([]);
     const [rightBanners, setRightBanners] = useState([]);
+
+    // Posts State
+    const [posts, setPosts] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('all'); // 'all', 'free', 'scammer'
 
     // Modal State
     const [modal, setModal] = useState({
@@ -44,15 +53,17 @@ const AdminPage = () => {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [bannersData, roomsData, rightBannersData] = await Promise.all([
+            const [bannersData, roomsData, rightBannersData, postsData] = await Promise.all([
                 getBanners(),
                 getRooms(),
-                getRightBanners()
+                getRightBanners(),
+                getAllPosts()
             ]);
 
             setBanners(convertBannersFromDB(bannersData));
             setRooms(convertRoomsFromDB(roomsData));
             setRightBanners(convertRightBannersFromDB(rightBannersData));
+            setPosts(postsData);
         } catch (error) {
             console.error('데이터 로드 실패:', error);
             showToast('데이터 로드에 실패했습니다.', 'error');
@@ -636,6 +647,130 @@ const AdminPage = () => {
                     }
                 }} style={styles.saveBtn}>우측 사이드바 저장</button>
             </section>
+
+            <section style={styles.section}>
+                <h2>4. 게시판 관리</h2>
+
+                <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+                    <button
+                        onClick={() => setSelectedCategory('all')}
+                        style={{
+                            ...styles.categoryBtn,
+                            ...(selectedCategory === 'all' ? styles.activeCategoryBtn : {})
+                        }}
+                    >
+                        전체 ({posts.length})
+                    </button>
+                    <button
+                        onClick={() => setSelectedCategory('free')}
+                        style={{
+                            ...styles.categoryBtn,
+                            ...(selectedCategory === 'free' ? styles.activeCategoryBtn : {})
+                        }}
+                    >
+                        자유게시판 ({posts.filter(p => p.category === 'free').length})
+                    </button>
+                    <button
+                        onClick={() => setSelectedCategory('scammer')}
+                        style={{
+                            ...styles.categoryBtn,
+                            ...(selectedCategory === 'scammer' ? styles.activeCategoryBtn : {})
+                        }}
+                    >
+                        사기꾼게시판 ({posts.filter(p => p.category === 'scammer').length})
+                    </button>
+                </div>
+
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                        <thead>
+                            <tr style={{ backgroundColor: '#f9f9f9', borderBottom: '2px solid #ddd' }}>
+                                <th style={{ padding: '10px', textAlign: 'left' }}>카테고리</th>
+                                <th style={{ padding: '10px', textAlign: 'left' }}>제목</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>작성자</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>작성일</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>조회</th>
+                                <th style={{ padding: '10px', textAlign: 'center' }}>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {posts
+                                .filter(post => selectedCategory === 'all' || post.category === selectedCategory)
+                                .map((post) => (
+                                    <tr key={post.id} style={{ borderBottom: '1px solid #eee' }}>
+                                        <td style={{ padding: '10px', textAlign: 'left' }}>
+                                            <span style={{
+                                                padding: '2px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '11px',
+                                                backgroundColor: post.category === 'free' ? '#e3f2fd' : '#ffebee',
+                                                color: post.category === 'free' ? '#1976d2' : '#c62828'
+                                            }}>
+                                                {post.category === 'free' ? '자유' : '사기꾼'}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '10px', textAlign: 'left' }}>
+                                            {post.pinned && <span style={{ color: '#f39c12', marginRight: '4px' }}>📌</span>}
+                                            {post.title}
+                                        </td>
+                                        <td style={{ padding: '10px', textAlign: 'center' }}>{post.author}</td>
+                                        <td style={{ padding: '10px', textAlign: 'center' }}>
+                                            {new Date(post.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td style={{ padding: '10px', textAlign: 'center' }}>{post.views}</td>
+                                        <td style={{ padding: '10px', textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
+                                                <button
+                                                    onClick={async () => {
+                                                        try {
+                                                            await togglePinPost(post.id, !post.pinned);
+                                                            await fetchAllData();
+                                                            showToast(post.pinned ? '고정 해제되었습니다!' : '고정되었습니다!');
+                                                        } catch (error) {
+                                                            console.error('고정 실패:', error);
+                                                            showToast('고정 처리에 실패했습니다.', 'error');
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        ...styles.actionBtn,
+                                                        backgroundColor: post.pinned ? '#f39c12' : '#95a5a6'
+                                                    }}
+                                                    title={post.pinned ? '고정 해제' : '상단 고정'}
+                                                >
+                                                    📌
+                                                </button>
+                                                <button
+                                                    onClick={async () => {
+                                                        if (window.confirm('정말 삭제하시겠습니까?')) {
+                                                            try {
+                                                                await deletePost(post.id);
+                                                                await fetchAllData();
+                                                                showToast('게시글이 삭제되었습니다!');
+                                                            } catch (error) {
+                                                                console.error('삭제 실패:', error);
+                                                                showToast('삭제에 실패했습니다.', 'error');
+                                                            }
+                                                        }
+                                                    }}
+                                                    style={styles.actionBtn}
+                                                    title="삭제"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                        </tbody>
+                    </table>
+
+                    {posts.filter(post => selectedCategory === 'all' || post.category === selectedCategory).length === 0 && (
+                        <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+                            게시글이 없습니다.
+                        </div>
+                    )}
+                </div>
+            </section>
         </div>
     );
 };
@@ -704,6 +839,30 @@ const styles = {
     toastError: {
         backgroundColor: '#e74c3c',
         color: '#fff',
+    },
+    categoryBtn: {
+        padding: '8px 16px',
+        border: '1px solid #ddd',
+        backgroundColor: '#fff',
+        cursor: 'pointer',
+        borderRadius: '4px',
+        fontSize: '13px',
+        fontWeight: '500',
+    },
+    activeCategoryBtn: {
+        backgroundColor: 'var(--tg-primary)',
+        color: '#fff',
+        borderColor: 'var(--tg-primary)',
+        fontWeight: 'bold',
+    },
+    actionBtn: {
+        padding: '4px 8px',
+        border: 'none',
+        backgroundColor: '#e74c3c',
+        color: '#fff',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontSize: '14px',
     },
 };
 
