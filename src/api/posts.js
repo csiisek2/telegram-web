@@ -57,7 +57,6 @@ export const createPost = async (postData) => {
                 content: postData.content,
                 author: postData.author,
                 category: postData.category,
-                user_id: postData.user_id || null,
                 views: 0,
                 pinned: false
             }])
