@@ -674,7 +674,7 @@ const AdminPage = () => {
                                     ...styles.pinBtn,
                                     backgroundColor: room.isPinned ? '#f39c12' : '#95a5a6'
                                 }}
-                                title={room.isPinned ? '고정 해제' : '1번에 고정'}
+                                title={room.isPinned ? '고정 해제' : '상단에 고정'}
                             >
                                 {room.isPinned ? '📌 고정됨' : '📌 고정'}
                             </button>
