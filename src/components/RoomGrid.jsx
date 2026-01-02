@@ -1,20 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { siteConfigStore } from '../data/mockData';
+import { getRooms, convertRoomsFromDB } from '../api/siteConfig';
 
 const RoomGrid = () => {
     const [searchParams] = useSearchParams();
     const searchTerm = searchParams.get('search') || '';
     const ITEMS_PER_PAGE = 21;
 
-    // 1. [사용자 + 관리자 설정] 저장된 데이터 가져오기
-    const [manualItems, setManualItems] = useState(siteConfigStore.getRecommendedRooms());
+    // 1. [사용자 + 관리자 설정] Supabase에서 데이터 가져오기
+    const [manualItems, setManualItems] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    React.useEffect(() => {
-        const unsubscribe = siteConfigStore.subscribe(() => {
-            setManualItems([...siteConfigStore.getRecommendedRooms()]);
-        });
-        return () => unsubscribe();
+    useEffect(() => {
+        const fetchRooms = async () => {
+            try {
+                const roomsData = await getRooms();
+                setManualItems(convertRoomsFromDB(roomsData));
+            } catch (error) {
+                console.error('추천방 로드 실패:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRooms();
     }, []);
 
     // 2. [자동 생성] 테스트를 위해 대량의 데이터를 자동으로 만듭니다.

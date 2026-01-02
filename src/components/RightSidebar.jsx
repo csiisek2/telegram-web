@@ -1,15 +1,19 @@
-import React from 'react';
-
-import { siteConfigStore } from '../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { getRightBanners, convertRightBannersFromDB } from '../api/siteConfig';
 
 const RightSidebar = () => {
-    const [banners, setBanners] = React.useState(siteConfigStore.getRightBanners());
+    const [banners, setBanners] = useState([]);
 
-    React.useEffect(() => {
-        const unsubscribe = siteConfigStore.subscribe(() => {
-            setBanners([...siteConfigStore.getRightBanners()]);
-        });
-        return () => unsubscribe();
+    useEffect(() => {
+        const fetchBanners = async () => {
+            try {
+                const bannersData = await getRightBanners();
+                setBanners(convertRightBannersFromDB(bannersData));
+            } catch (error) {
+                console.error('우측 배너 로드 실패:', error);
+            }
+        };
+        fetchBanners();
     }, []);
 
     return (

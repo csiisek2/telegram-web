@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { siteConfigStore } from '../data/mockData';
+import {
+    getBanners,
+    getRooms,
+    getRightBanners,
+    updateAllBanners,
+    updateAllRooms,
+    updateAllRightBanners,
+    addRoom as addRoomAPI,
+    deleteRoom as deleteRoomAPI,
+    convertBannersFromDB,
+    convertRoomsFromDB,
+    convertRightBannersFromDB
+} from '../api/siteConfig';
 
 const AdminPage = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
     // Config State
     const [banners, setBanners] = useState([]);
@@ -23,15 +36,29 @@ const AdminPage = () => {
     const [toasts, setToasts] = useState([]);
 
     useEffect(() => {
-        updateState();
-        const unsubscribe = siteConfigStore.subscribe(updateState);
-        return () => unsubscribe();
-    }, []);
+        if (isLoggedIn) {
+            fetchAllData();
+        }
+    }, [isLoggedIn]);
 
-    const updateState = () => {
-        setBanners([...siteConfigStore.getBanners()]);
-        setRooms([...siteConfigStore.getRecommendedRooms()]);
-        setRightBanners([...siteConfigStore.getRightBanners()]);
+    const fetchAllData = async () => {
+        setLoading(true);
+        try {
+            const [bannersData, roomsData, rightBannersData] = await Promise.all([
+                getBanners(),
+                getRooms(),
+                getRightBanners()
+            ]);
+
+            setBanners(convertBannersFromDB(bannersData));
+            setRooms(convertRoomsFromDB(roomsData));
+            setRightBanners(convertRightBannersFromDB(rightBannersData));
+        } catch (error) {
+            console.error('데이터 로드 실패:', error);
+            showToast('데이터 로드에 실패했습니다.', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Toast notification system
@@ -122,14 +149,21 @@ const AdminPage = () => {
         setJumpInput('');
     };
 
-    const confirmModal = () => {
+    const confirmModal = async () => {
         const { type, section, targetIndex } = modal;
 
         if (type === 'delete') {
-            const newRooms = rooms.filter((_, i) => i !== targetIndex);
-            setRooms(newRooms);
-            closeModal();
-            showToast('삭제되었습니다! "추천 홍보방 저장" 버튼을 눌러 완전히 저장하세요.');
+            try {
+                const roomToDelete = rooms[targetIndex];
+                await deleteRoomAPI(roomToDelete.id);
+                const newRooms = rooms.filter((_, i) => i !== targetIndex);
+                setRooms(newRooms);
+                closeModal();
+                showToast('삭제되었습니다!');
+            } catch (error) {
+                console.error('삭제 실패:', error);
+                showToast('삭제에 실패했습니다.', 'error');
+            }
         } else if (type === 'jump') {
             const list = section === 'banners' ? banners : section === 'recommendedRooms' ? rooms : rightBanners;
             const targetNum = parseInt(jumpInput, 10);
@@ -141,9 +175,16 @@ const AdminPage = () => {
 
             const newTargetIndex = targetNum - 1;
             if (newTargetIndex !== targetIndex) {
-                siteConfigStore.moveItem(section, targetIndex, newTargetIndex);
+                const newList = [...list];
+                const [item] = newList.splice(targetIndex, 1);
+                newList.splice(newTargetIndex, 0, item);
+
+                if (section === 'banners') setBanners(newList);
+                else if (section === 'recommendedRooms') setRooms(newList);
+                else setRightBanners(newList);
+
                 closeModal();
-                showToast('순서가 변경되었습니다!');
+                showToast('순서가 변경되었습니다! 저장 버튼을 눌러주세요.');
             } else {
                 closeModal();
             }
@@ -151,14 +192,22 @@ const AdminPage = () => {
     };
 
     const handleMove = (type, index, direction) => {
+        const list = type === 'banners' ? banners : type === 'recommendedRooms' ? rooms : rightBanners;
+        const newList = [...list];
+
         if (direction === 'up' && index > 0) {
-            siteConfigStore.moveItem(type, index, index - 1);
-        } else if (direction === 'down') {
-            const list = type === 'banners' ? banners : type === 'recommendedRooms' ? rooms : rightBanners;
-            if (index < list.length - 1) {
-                siteConfigStore.moveItem(type, index, index + 1);
-            }
+            [newList[index], newList[index - 1]] = [newList[index - 1], newList[index]];
+        } else if (direction === 'down' && index < list.length - 1) {
+            [newList[index], newList[index + 1]] = [newList[index + 1], newList[index]];
+        } else {
+            return;
         }
+
+        if (type === 'banners') setBanners(newList);
+        else if (type === 'recommendedRooms') setRooms(newList);
+        else setRightBanners(newList);
+
+        showToast('순서가 변경되었습니다! 저장 버튼을 눌러주세요.');
     };
 
     const handleBannerChange = (index, field, value) => {
@@ -168,12 +217,16 @@ const AdminPage = () => {
     };
 
     const handleBannerSave = async () => {
+        setLoading(true);
         try {
-            await siteConfigStore.updateBanners(banners);
+            await updateAllBanners(banners);
             showToast('배너 설정이 저장되었습니다!');
+            await fetchAllData();
         } catch (error) {
             console.error('저장 실패:', error);
             showToast('저장 실패: ' + error.message, 'error');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -220,18 +273,27 @@ const AdminPage = () => {
         }
     };
 
-    const addRoom = () => {
-        const newRoom = {
-            id: Date.now(),
-            name: '새 홍보방',
-            desc: '설명 입력',
-            members: 0,
-            link: '#',
-            image: '',
-            isPinned: false
-        };
-        setRooms([newRoom, ...rooms]);
-        showToast('새 홍보방이 추가되었습니다!');
+    const addRoom = async () => {
+        setLoading(true);
+        try {
+            const newRoomData = {
+                name: '새 홍보방',
+                desc: '설명 입력',
+                members: 0,
+                link: '#',
+                image: '',
+                isPinned: false,
+                display_order: 0
+            };
+            await addRoomAPI(newRoomData);
+            await fetchAllData();
+            showToast('새 홍보방이 추가되었습니다!');
+        } catch (error) {
+            console.error('추가 실패:', error);
+            showToast('추가에 실패했습니다.', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const togglePin = (index) => {
@@ -257,14 +319,18 @@ const AdminPage = () => {
     };
 
     const handleRoomSave = async () => {
+        setLoading(true);
         try {
             console.log('저장 시도:', rooms.length, '개 항목');
-            await siteConfigStore.updateRecommendedRooms(rooms);
+            await updateAllRooms(rooms);
             console.log('저장 성공!');
             showToast('추천 홍보방 설정이 저장되었습니다!');
+            await fetchAllData();
         } catch (error) {
             console.error('저장 실패:', error);
             showToast('저장 실패: ' + error.message, 'error');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -557,12 +623,16 @@ const AdminPage = () => {
                     ))}
                 </div>
                 <button onClick={async () => {
+                    setLoading(true);
                     try {
-                        await siteConfigStore.updateRightBanners(rightBanners);
+                        await updateAllRightBanners(rightBanners);
                         showToast('우측 사이드바 설정이 저장되었습니다!');
+                        await fetchAllData();
                     } catch (error) {
                         console.error('저장 실패:', error);
                         showToast('저장 실패: ' + error.message, 'error');
+                    } finally {
+                        setLoading(false);
                     }
                 }} style={styles.saveBtn}>우측 사이드바 저장</button>
             </section>
