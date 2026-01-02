@@ -132,8 +132,8 @@ const RoomGrid = () => {
                             )}
                             <div style={styles.content}>
                                 <h3 style={styles.name}>
-                                    {room.isPinned && <span style={styles.badge}>추천 채널</span>}
                                     {room.name}
+                                    {room.isPinned && <span style={styles.badge}>추천 채널</span>}
                                 </h3>
                                 <p style={styles.desc}>{room.desc}</p>
                                 <div style={styles.meta}>
