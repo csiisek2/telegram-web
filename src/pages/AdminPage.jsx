@@ -287,16 +287,24 @@ const AdminPage = () => {
             return;
         }
 
+        // File size check (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+            showToast('파일 크기가 너무 큽니다. 10MB 이하의 파일을 선택해주세요.', 'error');
+            e.target.value = '';
+            return;
+        }
+
         console.log('홍보방 업로드 시작:', file.name, file.type, file.size);
 
         try {
             const compressedImage = await compressImage(file);
             console.log('홍보방 압축 완료, 원본:', file.size, '압축 후:', compressedImage.length);
             handleRoomChange(index, 'image', compressedImage);
-            showToast('이미지가 업로드되었습니다! "추천 홍보방 저장" 버튼을 눌러 저장하세요.');
+            showToast('✅ 이미지가 업로드되었습니다! 반드시 "추천 홍보방 저장" 버튼을 눌러 저장하세요.');
         } catch (error) {
             console.error('홍보방 압축 실패:', error);
-            showToast('이미지 업로드에 실패했습니다.', 'error');
+            showToast(`이미지 업로드 실패: ${error.message}`, 'error');
+            e.target.value = '';
         }
     };
 
