@@ -323,6 +323,11 @@ const AdminPage = () => {
             await addRoomAPI(newRoomData);
             await fetchAllData();
             showToast('새 홍보방이 추가되었습니다!');
+
+            // 맨 아래로 스크롤
+            setTimeout(() => {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }, 100);
         } catch (error) {
             console.error('추가 실패:', error);
             showToast('추가에 실패했습니다.', 'error');
@@ -629,51 +634,58 @@ const AdminPage = () => {
                 <h2>2. 추천 홍보방 관리 (가운데 그리드)</h2>
                 <button onClick={addRoom} style={styles.addBtn}>+ 새 홍보방 추가</button>
                 <div style={styles.list}>
-                    {rooms.map((room, index) => (
-                        <div key={room.id} style={styles.listItem}>
-                            <div style={styles.moveBtnsColumn}>
-                                <button onClick={() => handleMove('recommendedRooms', index, 'up')} disabled={index === 0} style={styles.moveBtnSmall}>▲</button>
-                                <button onClick={() => handleMove('recommendedRooms', index, 'down')} disabled={index === rooms.length - 1} style={styles.moveBtnSmall}>▼</button>
-                                <button type="button" onClick={() => openJumpModal('recommendedRooms', index)} style={{ ...styles.moveBtnSmall, marginTop: '4px', backgroundColor: '#ecf0f1', color: '#333' }} title="순서 직접 입력">🔢</button>
+                    {rooms
+                        .slice()
+                        .sort((a, b) => {
+                            if (a.isPinned && !b.isPinned) return -1;
+                            if (!a.isPinned && b.isPinned) return 1;
+                            return 0;
+                        })
+                        .map((room, index) => (
+                            <div key={room.id} style={styles.listItem}>
+                                <div style={styles.moveBtnsColumn}>
+                                    <button onClick={() => handleMove('recommendedRooms', index, 'up')} disabled={index === 0} style={styles.moveBtnSmall}>▲</button>
+                                    <button onClick={() => handleMove('recommendedRooms', index, 'down')} disabled={index === rooms.length - 1} style={styles.moveBtnSmall}>▼</button>
+                                    <button type="button" onClick={() => openJumpModal('recommendedRooms', index)} style={{ ...styles.moveBtnSmall, marginTop: '4px', backgroundColor: '#ecf0f1', color: '#333' }} title="순서 직접 입력">🔢</button>
+                                </div>
+                                <div style={styles.previewSmall}>
+                                    {room.image ? (
+                                        room.image.startsWith('data:video') ?
+                                            <video src={room.image} autoPlay loop muted playsInline style={{ width: '50px', height: '50px', objectFit: 'cover' }} /> :
+                                            <img src={room.image} alt="Preview" style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+                                    ) : <div style={{ width: '50px', height: '50px', background: '#eee' }}></div>}
+                                </div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <input type="text" value={room.name} onChange={(e) => handleRoomChange(index, 'name', e.target.value)} placeholder="방 이름" style={styles.inputSmall} />
+                                    <input type="text" value={room.desc} onChange={(e) => handleRoomChange(index, 'desc', e.target.value)} placeholder="설명" style={styles.inputSmall} />
+                                </div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <input type="number" value={room.members} onChange={(e) => handleRoomChange(index, 'members', Number(e.target.value))} placeholder="인원수" style={styles.inputSmall} />
+                                    <input type="text" value={room.link} onChange={(e) => handleRoomChange(index, 'link', e.target.value)} placeholder="링크" style={styles.inputSmall} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <input
+                                        type="file"
+                                        accept="image/*,video/mp4"
+                                        onChange={(e) => handleRoomImageUpload(index, e)}
+                                        style={{ fontSize: '11px' }}
+                                        key={`room-upload-${room.id}`}
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => togglePin(index)}
+                                    style={{
+                                        ...styles.pinBtn,
+                                        backgroundColor: room.isPinned ? '#f39c12' : '#95a5a6'
+                                    }}
+                                    title={room.isPinned ? '고정 해제' : '상단에 고정'}
+                                >
+                                    {room.isPinned ? '📌 고정됨' : '📌 고정'}
+                                </button>
+                                <button type="button" onClick={() => openDeleteModal(index)} style={styles.deleteBtn}>삭제</button>
                             </div>
-                            <div style={styles.previewSmall}>
-                                {room.image ? (
-                                    room.image.startsWith('data:video') ?
-                                        <video src={room.image} autoPlay loop muted playsInline style={{ width: '50px', height: '50px', objectFit: 'cover' }} /> :
-                                        <img src={room.image} alt="Preview" style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
-                                ) : <div style={{ width: '50px', height: '50px', background: '#eee' }}></div>}
-                            </div>
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                <input type="text" value={room.name} onChange={(e) => handleRoomChange(index, 'name', e.target.value)} placeholder="방 이름" style={styles.inputSmall} />
-                                <input type="text" value={room.desc} onChange={(e) => handleRoomChange(index, 'desc', e.target.value)} placeholder="설명" style={styles.inputSmall} />
-                            </div>
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                <input type="number" value={room.members} onChange={(e) => handleRoomChange(index, 'members', Number(e.target.value))} placeholder="인원수" style={styles.inputSmall} />
-                                <input type="text" value={room.link} onChange={(e) => handleRoomChange(index, 'link', e.target.value)} placeholder="링크" style={styles.inputSmall} />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <input
-                                    type="file"
-                                    accept="image/*,video/mp4"
-                                    onChange={(e) => handleRoomImageUpload(index, e)}
-                                    style={{ fontSize: '11px' }}
-                                    key={`room-upload-${room.id}`}
-                                />
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => togglePin(index)}
-                                style={{
-                                    ...styles.pinBtn,
-                                    backgroundColor: room.isPinned ? '#f39c12' : '#95a5a6'
-                                }}
-                                title={room.isPinned ? '고정 해제' : '상단에 고정'}
-                            >
-                                {room.isPinned ? '📌 고정됨' : '📌 고정'}
-                            </button>
-                            <button type="button" onClick={() => openDeleteModal(index)} style={styles.deleteBtn}>삭제</button>
-                        </div>
-                    ))}
+                        ))}
                 </div>
                 <button onClick={handleRoomSave} style={styles.saveBtn}>추천 홍보방 저장</button>
             </section>
