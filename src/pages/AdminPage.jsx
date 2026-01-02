@@ -32,6 +32,11 @@ const AdminPage = () => {
     const [posts, setPosts] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('all'); // 'all', 'free', 'scammer'
 
+    // Selected indices for dropdown editing
+    const [selectedBannerIndex, setSelectedBannerIndex] = useState(0);
+    const [selectedRoomIndex, setSelectedRoomIndex] = useState(0);
+    const [selectedRightBannerIndex, setSelectedRightBannerIndex] = useState(0);
+
     // Modal State
     const [modal, setModal] = useState({
         isOpen: false,
@@ -496,41 +501,96 @@ const AdminPage = () => {
             )}
 
             <section style={styles.section}>
-                <h2>1. 사이드바 배너 관리 ({banners.length}개)</h2>
-                <div style={styles.grid}>
-                    {banners.map((banner, index) => (
-                        <div key={banner.id} style={styles.card}>
-                            <div style={styles.cardHeader}>
-                                <h3 style={styles.cardTitle}>배너 #{index + 1} {index === 0 ? '(왼쪽 상단)' : ''}</h3>
-                                <div style={styles.moveBtns}>
-                                    <button onClick={() => handleMove('banners', index, 'up')} disabled={index === 0} style={styles.moveBtn}>▲</button>
-                                    <button onClick={() => handleMove('banners', index, 'down')} disabled={index === banners.length - 1} style={styles.moveBtn}>▼</button>
-                                </div>
-                            </div>
-                            <label style={styles.label}>제목:</label>
-                            <input type="text" value={banner.title} onChange={(e) => handleBannerChange(index, 'title', e.target.value)} style={styles.input} />
-                            <label style={styles.label}>설명:</label>
-                            <input type="text" value={banner.text} onChange={(e) => handleBannerChange(index, 'text', e.target.value)} style={styles.input} />
-                            <label style={styles.label}>링크:</label>
-                            <input type="text" value={banner.link} onChange={(e) => handleBannerChange(index, 'link', e.target.value)} style={styles.input} />
-                            <label style={styles.label}>이미지/동영상:</label>
-                            <input
-                                type="file"
-                                accept="image/*,video/mp4"
-                                onChange={(e) => handleBannerImageUpload(index, e)}
-                                style={styles.fileInput}
-                                key={`banner-${banner.id}`}
-                            />
-                            <div style={styles.preview}>
-                                {banner.image ? (
-                                    banner.image.startsWith('data:video') ?
-                                        <video src={banner.image} autoPlay loop muted playsInline style={{ maxWidth: '100%', maxHeight: '100px' }} /> :
-                                        <img src={banner.image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100px' }} />
-                                ) : <div style={{ color: '#aaa' }}>이미지 없음</div>}
+                <h2>1. 메인 배너 설정</h2>
+
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={styles.label}>배너 선택:</label>
+                    <select
+                        value={selectedBannerIndex}
+                        onChange={(e) => setSelectedBannerIndex(Number(e.target.value))}
+                        style={styles.select}
+                    >
+                        {banners.map((banner, index) => (
+                            <option key={banner.id} value={index}>
+                                배너 #{index + 1} {index === 0 ? '(왼쪽 상단)' : `(왼쪽 사이드바 ${index}번)`}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {banners[selectedBannerIndex] && (
+                    <div style={styles.editCard}>
+                        <div style={styles.cardHeader}>
+                            <h3 style={styles.cardTitle}>배너 #{selectedBannerIndex + 1} 편집</h3>
+                            <div style={styles.moveBtns}>
+                                <button
+                                    onClick={() => handleMove('banners', selectedBannerIndex, 'up')}
+                                    disabled={selectedBannerIndex === 0}
+                                    style={styles.moveBtn}
+                                >
+                                    ▲
+                                </button>
+                                <button
+                                    onClick={() => handleMove('banners', selectedBannerIndex, 'down')}
+                                    disabled={selectedBannerIndex === banners.length - 1}
+                                    style={styles.moveBtn}
+                                >
+                                    ▼
+                                </button>
+                                <button
+                                    onClick={() => openModal('jump', 'banners', selectedBannerIndex)}
+                                    style={styles.moveBtn}
+                                    title="특정 위치로 이동"
+                                >
+                                    🔢
+                                </button>
                             </div>
                         </div>
-                    ))}
-                </div>
+
+                        <label style={styles.label}>제목:</label>
+                        <input
+                            type="text"
+                            value={banners[selectedBannerIndex].title}
+                            onChange={(e) => handleBannerChange(selectedBannerIndex, 'title', e.target.value)}
+                            style={styles.input}
+                        />
+
+                        <label style={styles.label}>설명:</label>
+                        <input
+                            type="text"
+                            value={banners[selectedBannerIndex].text}
+                            onChange={(e) => handleBannerChange(selectedBannerIndex, 'text', e.target.value)}
+                            style={styles.input}
+                        />
+
+                        <label style={styles.label}>링크:</label>
+                        <input
+                            type="text"
+                            value={banners[selectedBannerIndex].link}
+                            onChange={(e) => handleBannerChange(selectedBannerIndex, 'link', e.target.value)}
+                            style={styles.input}
+                            placeholder="#"
+                        />
+
+                        <label style={styles.label}>이미지/동영상:</label>
+                        <input
+                            type="file"
+                            accept="image/*,video/mp4"
+                            onChange={(e) => handleBannerImageUpload(selectedBannerIndex, e)}
+                            style={styles.fileInput}
+                            key={`banner-${banners[selectedBannerIndex].id}`}
+                        />
+
+                        <div style={styles.preview}>
+                            {banners[selectedBannerIndex].image ? (
+                                banners[selectedBannerIndex].image.startsWith('data:video') ?
+                                    <video src={banners[selectedBannerIndex].image} autoPlay loop muted playsInline style={{ maxWidth: '100%', maxHeight: '150px' }} /> :
+                                    <img src={banners[selectedBannerIndex].image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '150px' }} />
+                            ) : <div style={{ color: '#aaa', padding: '20px', textAlign: 'center' }}>이미지 없음</div>}
+                        </div>
+                    </div>
+                )}
+
                 <button onClick={handleBannerSave} style={styles.saveBtn}>배너 설정 저장</button>
             </section>
 
@@ -788,6 +848,8 @@ const styles = {
     moveBtn: { padding: '2px 8px', fontSize: '12px', cursor: 'pointer' },
     label: { display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '4px', marginTop: '10px' },
     input: { width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '14px' },
+    select: { width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '14px', backgroundColor: '#fff', cursor: 'pointer' },
+    editCard: { border: '1px solid #ddd', padding: '20px', borderRadius: '8px', backgroundColor: '#f9f9f9', marginBottom: '20px' },
     fileInput: { marginTop: '5px', fontSize: '13px' },
     preview: { marginTop: '10px', height: '100px', backgroundColor: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', overflow: 'hidden' },
     saveBtn: { backgroundColor: 'var(--tg-primary)', color: '#fff', padding: '12px 24px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '15px', fontWeight: 'bold', display: 'block', width: '100%' },
