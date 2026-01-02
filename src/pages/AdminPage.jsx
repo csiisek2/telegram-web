@@ -333,14 +333,7 @@ const AdminPage = () => {
 
     const togglePin = (index) => {
         const newRooms = [...rooms];
-        const currentPinState = newRooms[index].isPinned;
-
-        // If pinning this item, unpin all others first
-        if (!currentPinState) {
-            newRooms.forEach(room => room.isPinned = false);
-        }
-
-        newRooms[index].isPinned = !currentPinState;
+        newRooms[index].isPinned = !newRooms[index].isPinned;
 
         // Sort: pinned items first
         newRooms.sort((a, b) => {
@@ -350,7 +343,7 @@ const AdminPage = () => {
         });
 
         setRooms(newRooms);
-        showToast(currentPinState ? '고정이 해제되었습니다!' : '1번 위치에 고정되었습니다!');
+        showToast(newRooms[index].isPinned ? '상단에 고정되었습니다!' : '고정이 해제되었습니다!');
     };
 
     const handleRoomSave = async () => {
