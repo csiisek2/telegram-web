@@ -662,13 +662,13 @@ const AdminPage = () => {
                                             <span style={{
                                                 backgroundColor: '#f39c12',
                                                 color: '#fff',
-                                                padding: '2px 8px',
-                                                borderRadius: '10px',
-                                                fontSize: '10px',
+                                                padding: '2px 6px',
+                                                borderRadius: '8px',
+                                                fontSize: '9px',
                                                 fontWeight: 'bold',
                                                 whiteSpace: 'nowrap'
                                             }}>
-                                                추천 채널
+                                                추천
                                             </span>
                                         )}
                                         <input type="text" value={room.desc} onChange={(e) => handleRoomChange(index, 'desc', e.target.value)} placeholder="설명" style={styles.inputSmall} />
