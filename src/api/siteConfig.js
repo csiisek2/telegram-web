@@ -274,6 +274,84 @@ export const deleteRightBanner = async (id) => {
     }
 };
 
+// ==================== POWER LINKS ====================
+
+export const getPowerLinks = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('site_config')
+            .select('*')
+            .eq('type', 'powerlink')
+            .order('display_order', { ascending: true });
+
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('getPowerLinks error:', error);
+        throw error;
+    }
+};
+
+export const addPowerLink = async (powerLinkData) => {
+    try {
+        const { data, error } = await supabase
+            .from('site_config')
+            .insert([{
+                type: 'powerlink',
+                name: powerLinkData.name,
+                link: powerLinkData.link,
+                display_order: powerLinkData.display_order || 0,
+            }])
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('addPowerLink error:', error);
+        throw error;
+    }
+};
+
+export const updateAllPowerLinks = async (powerLinks) => {
+    try {
+        const updates = powerLinks.map((link, index) => ({
+            id: link.id,
+            name: link.name,
+            link: link.link,
+            display_order: index,
+        }));
+
+        const promises = updates.map(update =>
+            supabase
+                .from('site_config')
+                .update(update)
+                .eq('id', update.id)
+        );
+
+        await Promise.all(promises);
+        return true;
+    } catch (error) {
+        console.error('updateAllPowerLinks error:', error);
+        throw error;
+    }
+};
+
+export const deletePowerLink = async (id) => {
+    try {
+        const { error } = await supabase
+            .from('site_config')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('deletePowerLink error:', error);
+        throw error;
+    }
+};
+
 // ==================== HELPER FUNCTIONS ====================
 
 // Convert Supabase data to frontend format
@@ -305,6 +383,14 @@ export const convertRightBannersFromDB = (dbData) => {
         title: item.name,
         text: item.description,
         image: item.image_url,
+        link: item.link,
+    }));
+};
+
+export const convertPowerLinksFromDB = (dbData) => {
+    return dbData.map(item => ({
+        id: item.id,
+        name: item.name,
         link: item.link,
     }));
 };

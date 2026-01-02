@@ -3,17 +3,22 @@ import {
     getBanners,
     getRooms,
     getRightBanners,
+    getPowerLinks,
     updateAllBanners,
     updateAllRooms,
     updateAllRightBanners,
+    updateAllPowerLinks,
     addRoom as addRoomAPI,
     addRightBanner as addRightBannerAPI,
+    addPowerLink as addPowerLinkAPI,
     deleteRoom as deleteRoomAPI,
     deleteBanner,
     deleteRightBanner,
+    deletePowerLink,
     convertBannersFromDB,
     convertRoomsFromDB,
-    convertRightBannersFromDB
+    convertRightBannersFromDB,
+    convertPowerLinksFromDB
 } from '../api/siteConfig';
 import {
     getAllPosts,
@@ -30,6 +35,7 @@ const AdminPage = () => {
     const [banners, setBanners] = useState([]);
     const [rooms, setRooms] = useState([]);
     const [rightBanners, setRightBanners] = useState([]);
+    const [powerLinks, setPowerLinks] = useState([]);
 
     // Posts State
     const [posts, setPosts] = useState([]);
@@ -61,16 +67,18 @@ const AdminPage = () => {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [bannersData, roomsData, rightBannersData, postsData] = await Promise.all([
+            const [bannersData, roomsData, rightBannersData, powerLinksData, postsData] = await Promise.all([
                 getBanners(),
                 getRooms(),
                 getRightBanners(),
+                getPowerLinks(),
                 getAllPosts()
             ]);
 
             setBanners(convertBannersFromDB(bannersData));
             setRooms(convertRoomsFromDB(roomsData));
             setRightBanners(convertRightBannersFromDB(rightBannersData));
+            setPowerLinks(convertPowerLinksFromDB(powerLinksData));
             setPosts(postsData || []);
         } catch (error) {
             console.error('데이터 로드 실패:', error);
@@ -879,7 +887,121 @@ const AdminPage = () => {
             </section>
 
             <section style={styles.section}>
-                <h2>4. 게시판 관리</h2>
+                <h2>4. 파워링크 관리</h2>
+                <button onClick={async () => {
+                    setLoading(true);
+                    try {
+                        const newLink = {
+                            name: '새 파워링크',
+                            link: 'https://t.me/example',
+                            display_order: powerLinks.length
+                        };
+                        await addPowerLinkAPI(newLink);
+                        await fetchAllData();
+                        showToast('새 파워링크가 추가되었습니다!');
+                    } catch (error) {
+                        console.error('추가 실패:', error);
+                        showToast('추가에 실패했습니다.', 'error');
+                    } finally {
+                        setLoading(false);
+                    }
+                }} style={styles.addBtn}>+ 새 파워링크 추가</button>
+
+                <div style={styles.list}>
+                    {powerLinks.map((link, index) => (
+                        <div key={link.id} style={styles.listItem}>
+                            <div style={styles.moveBtnsColumn}>
+                                <button
+                                    onClick={() => {
+                                        if (index === 0) return;
+                                        const newLinks = [...powerLinks];
+                                        [newLinks[index], newLinks[index - 1]] = [newLinks[index - 1], newLinks[index]];
+                                        setPowerLinks(newLinks);
+                                        showToast('순서가 변경되었습니다! 저장 버튼을 눌러주세요.');
+                                    }}
+                                    disabled={index === 0}
+                                    style={styles.moveBtnSmall}
+                                >
+                                    ▲
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (index === powerLinks.length - 1) return;
+                                        const newLinks = [...powerLinks];
+                                        [newLinks[index], newLinks[index + 1]] = [newLinks[index + 1], newLinks[index]];
+                                        setPowerLinks(newLinks);
+                                        showToast('순서가 변경되었습니다! 저장 버튼을 눌러주세요.');
+                                    }}
+                                    disabled={index === powerLinks.length - 1}
+                                    style={styles.moveBtnSmall}
+                                >
+                                    ▼
+                                </button>
+                            </div>
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                <input
+                                    type="text"
+                                    value={link.name}
+                                    onChange={(e) => {
+                                        const newLinks = [...powerLinks];
+                                        newLinks[index].name = e.target.value;
+                                        setPowerLinks(newLinks);
+                                    }}
+                                    placeholder="채널 이름"
+                                    style={styles.inputSmall}
+                                />
+                            </div>
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                <input
+                                    type="text"
+                                    value={link.link}
+                                    onChange={(e) => {
+                                        const newLinks = [...powerLinks];
+                                        newLinks[index].link = e.target.value;
+                                        setPowerLinks(newLinks);
+                                    }}
+                                    placeholder="텔레그램 링크"
+                                    style={styles.inputSmall}
+                                />
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    if (window.confirm('정말 삭제하시겠습니까?')) {
+                                        try {
+                                            await deletePowerLink(link.id);
+                                            await fetchAllData();
+                                            showToast('파워링크가 삭제되었습니다!');
+                                        } catch (error) {
+                                            console.error('삭제 실패:', error);
+                                            showToast('삭제에 실패했습니다.', 'error');
+                                        }
+                                    }
+                                }}
+                                style={styles.deleteBtn}
+                            >
+                                삭제
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
+                <button onClick={async () => {
+                    setLoading(true);
+                    try {
+                        await updateAllPowerLinks(powerLinks);
+                        showToast('파워링크 설정이 저장되었습니다!');
+                        await fetchAllData();
+                    } catch (error) {
+                        console.error('저장 실패:', error);
+                        showToast('저장 실패: ' + error.message, 'error');
+                    } finally {
+                        setLoading(false);
+                    }
+                }} style={styles.saveBtn}>파워링크 저장</button>
+            </section>
+
+            <section style={styles.section}>
+                <h2>5. 게시판 관리</h2>
 
                 <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
                     <button
