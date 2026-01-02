@@ -56,7 +56,7 @@ function App() {
 
 const styles = {
   mainContainer: {
-    maxWidth: '1300px', // Increased width for 3 columns
+    maxWidth: '1400px', // Increased width for wider right sidebar
     margin: '24px auto',
     padding: '0 16px',
     display: 'flex',

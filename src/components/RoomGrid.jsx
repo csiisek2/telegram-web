@@ -5,7 +5,7 @@ import { getRooms, convertRoomsFromDB } from '../api/siteConfig';
 const RoomGrid = () => {
     const [searchParams] = useSearchParams();
     const searchTerm = searchParams.get('search') || '';
-    const ITEMS_PER_PAGE = 21;
+    const ITEMS_PER_PAGE = 10; // 오른쪽 사이드바용으로 줄임
 
     // 1. [사용자 + 관리자 설정] Supabase에서 데이터 가져오기
     const [manualItems, setManualItems] = useState([]);
@@ -93,7 +93,7 @@ const RoomGrid = () => {
     };
 
     return (
-        <div className="container" style={{ marginTop: '20px', marginBottom: '40px' }}>
+        <div style={{ marginBottom: '20px' }}>
             <div style={styles.titleContainer}>
                 <div className="section-title">추천 홍보방</div>
                 {searchTerm && (
@@ -205,13 +205,13 @@ const styles = {
     },
     grid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', // Responsive, approx 4 cols on desktop
-        gap: '16px',
-        marginBottom: '32px',
+        gridTemplateColumns: 'repeat(2, 1fr)', // 2열 고정 (400px 사이드바에 맞춤)
+        gap: '12px',
+        marginBottom: '24px',
     },
     card: {
         backgroundColor: '#fff',
-        borderRadius: '12px',
+        borderRadius: '8px',
         overflow: 'hidden',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         transition: 'transform 0.2s, box-shadow 0.2s',
@@ -222,7 +222,7 @@ const styles = {
         }
     },
     imagePlaceholder: {
-        height: '140px',
+        height: '100px', // 더 작게 조정
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -233,35 +233,35 @@ const styles = {
         objectFit: 'cover',
     },
     content: {
-        padding: '12px',
+        padding: '8px',
     },
     name: {
-        fontSize: '15px',
+        fontSize: '13px',
         fontWeight: '700',
-        marginBottom: '4px',
+        marginBottom: '3px',
         color: 'var(--tg-text)',
     },
     desc: {
-        fontSize: '12px',
+        fontSize: '11px',
         color: 'var(--tg-text-secondary)',
-        marginBottom: '8px',
+        marginBottom: '6px',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
     },
     meta: {
-        fontSize: '11px',
+        fontSize: '10px',
         color: '#888',
-        marginBottom: '10px',
+        marginBottom: '8px',
     },
     button: {
         width: '100%',
-        padding: '8px',
+        padding: '6px',
         backgroundColor: '#eff7fd',
         color: 'var(--tg-primary)',
         fontWeight: '600',
-        borderRadius: '8px',
-        fontSize: '13px',
+        borderRadius: '6px',
+        fontSize: '12px',
         transition: 'background-color 0.2s',
     },
     pagination: {

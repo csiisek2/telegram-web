@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getRightBanners, convertRightBannersFromDB } from '../api/siteConfig';
+import RoomGrid from './RoomGrid';
 
 const RightSidebar = () => {
     const [banners, setBanners] = useState([]);
@@ -18,7 +19,10 @@ const RightSidebar = () => {
 
     return (
         <aside style={styles.sidebar}>
-            <div className="section-title">스페셜 업소</div>
+            {/* 추천채널을 맨 위에 배치 */}
+            <RoomGrid />
+
+            <div className="section-title" style={{ marginTop: '40px' }}>스페셜 업소</div>
 
             {banners.map((banner, index) => (
                 <div
@@ -53,7 +57,7 @@ const RightSidebar = () => {
 
 const styles = {
     sidebar: {
-        width: '180px',
+        width: '400px', // 추천채널을 위해 너비 확장
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
