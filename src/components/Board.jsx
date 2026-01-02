@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { postStore } from '../data/mockData';
+import { getPosts, incrementViews } from '../api/posts';
 import { useAuth } from '../context/AuthContext';
 
 const Board = ({ boardTitle = '자유게시판', boardCategory = '자유', id, preview = false, linkUrl = '#', writeUrl = null }) => {
@@ -11,20 +11,36 @@ const Board = ({ boardTitle = '자유게시판', boardCategory = '자유', id, p
     const [posts, setPosts] = useState([]);
     const [viewMode, setViewMode] = useState('list'); // 'list', 'detail'
     const [selectedPost, setSelectedPost] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [totalPages, setTotalPages] = useState(1);
 
-    // Initial Data Fetch & Subscription
+    // Map category names
+    const categoryMap = {
+        '자유': 'free',
+        '사기꾼': 'scammer'
+    };
+
+    // Initial Data Fetch
     useEffect(() => {
-        const loadPosts = () => {
-            if (boardCategory === '자유') {
-                setPosts(postStore.getFreePosts());
-            } else {
-                setPosts(postStore.getScammerPosts());
+        const loadPosts = async () => {
+            setLoading(true);
+            try {
+                const category = categoryMap[boardCategory];
+                const result = await getPosts(category, 1, 100); // Get all posts for now
+                setPosts(result.posts);
+                setTotalPages(result.totalPages);
+            } catch (error) {
+                console.error('게시글 로드 실패:', error);
+            } finally {
+                setLoading(false);
             }
         };
 
         loadPosts();
-        const unsubscribe = postStore.subscribe(loadPosts);
-        return () => unsubscribe();
+
+        // Refresh every 10 seconds
+        const interval = setInterval(loadPosts, 10000);
+        return () => clearInterval(interval);
     }, [boardCategory]);
 
     // 검색 필터링
@@ -42,7 +58,7 @@ const Board = ({ boardTitle = '자유게시판', boardCategory = '자유', id, p
     const [currentPage, setCurrentPage] = useState(1);
 
     // Derived state for pagination
-    const totalPages = Math.ceil(filteredPosts.length / ITEMS_PER_PAGE);
+    const paginatedTotalPages = Math.ceil(filteredPosts.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
 
     // In preview mode: show top 5. In full mode: show based on pagination
@@ -57,10 +73,21 @@ const Board = ({ boardTitle = '자유게시판', boardCategory = '자유', id, p
         setCurrentPage(page);
     };
 
-    const handlePostClick = (post) => {
+    const handlePostClick = async (post) => {
         if (preview) return;
         setSelectedPost(post);
         setViewMode('detail');
+
+        // Increment views
+        try {
+            await incrementViews(post.id);
+            // Update local state
+            setPosts(prevPosts => prevPosts.map(p =>
+                p.id === post.id ? { ...p, views: p.views + 1 } : p
+            ));
+        } catch (error) {
+            console.error('조회수 증가 실패:', error);
+        }
     };
 
     const handleBackToList = () => {
@@ -103,7 +130,7 @@ const Board = ({ boardTitle = '자유게시판', boardCategory = '자유', id, p
                         <h3 style={styles.detailTitle}>{selectedPost.title}</h3>
                         <div style={styles.detailMeta}>
                             <span>작성자: {selectedPost.author}</span>
-                            <span>날짜: {selectedPost.date}</span>
+                            <span>날짜: {new Date(selectedPost.created_at).toLocaleDateString()}</span>
                             <span>조회: {selectedPost.views}</span>
                         </div>
                     </div>
@@ -137,10 +164,11 @@ const Board = ({ boardTitle = '자유게시판', boardCategory = '자유', id, p
                                 currentItems.map((post) => (
                                     <tr key={post.id} style={styles.tr}>
                                         <td style={styles.tdTitle} onClick={() => handlePostClick(post)}>
+                                            {post.pinned && <span style={styles.pinnedBadge}>📌 </span>}
                                             {post.title}
                                         </td>
                                         <td style={styles.td}>{post.author}</td>
-                                        <td style={styles.td}>{post.date}</td>
+                                        <td style={styles.td}>{new Date(post.created_at).toLocaleDateString()}</td>
                                         <td style={styles.td}>{post.views}</td>
                                     </tr>
                                 ))
@@ -164,7 +192,7 @@ const Board = ({ boardTitle = '자유게시판', boardCategory = '자유', id, p
                             >
                                 &lt;
                             </button>
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            {Array.from({ length: paginatedTotalPages }, (_, i) => i + 1).map((page) => (
                                 <button
                                     key={page}
                                     onClick={() => handlePageChange(page)}
@@ -177,8 +205,8 @@ const Board = ({ boardTitle = '자유게시판', boardCategory = '자유', id, p
                                 </button>
                             ))}
                             <button
-                                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                                disabled={currentPage === totalPages}
+                                onClick={() => handlePageChange(Math.min(paginatedTotalPages, currentPage + 1))}
+                                disabled={currentPage === paginatedTotalPages}
                                 style={styles.pageBtn}
                             >
                                 &gt;
@@ -283,6 +311,10 @@ const styles = {
         textAlign: 'left',
         color: '#333',
         cursor: 'pointer',
+    },
+    pinnedBadge: {
+        color: '#f39c12',
+        marginRight: '4px',
     },
     pagination: {
         display: 'flex',

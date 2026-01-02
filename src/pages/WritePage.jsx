@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { postStore } from '../data/mockData';
+import { createPost } from '../api/posts';
 import { useAuth } from '../context/AuthContext';
 
 const WritePage = ({ category }) => {
@@ -10,6 +10,7 @@ const WritePage = ({ category }) => {
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');
     const [content, setContent] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     // 로그인 체크 및 작성자 자동 입력
     useEffect(() => {
@@ -23,30 +24,35 @@ const WritePage = ({ category }) => {
         setAuthor(currentUser?.nickname || '');
     }, [isLoggedIn, currentUser, navigate, openAuthModal]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!title.trim() || !author.trim() || !content.trim()) {
             alert('모든 필드를 입력해주세요.');
             return;
         }
 
-        const newPost = {
-            id: Date.now(), // Simple unique ID
-            cat: category === 'free' ? '자유' : '사기',
-            title: title,
-            author: author,
-            date: new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').slice(0, -1),
-            views: 0,
-            content: content,
-            comments: []
-        };
+        setSubmitting(true);
+        try {
+            await createPost({
+                title: title.trim(),
+                author: author,
+                content: content.trim(),
+                category: category === 'free' ? 'free' : 'scammer',
+                user_id: currentUser?.id || null
+            });
 
-        if (category === 'free') {
-            postStore.addFreePost(newPost);
-            navigate('/free');
-        } else {
-            postStore.addScammerPost(newPost);
-            navigate('/scammer');
+            alert('게시글이 등록되었습니다!');
+
+            if (category === 'free') {
+                navigate('/free');
+            } else {
+                navigate('/scammer');
+            }
+        } catch (error) {
+            console.error('게시글 등록 실패:', error);
+            alert('게시글 등록에 실패했습니다. 다시 시도해주세요.');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -94,7 +100,9 @@ const WritePage = ({ category }) => {
                     </div>
                     <div style={styles.buttonGroup}>
                         <button type="button" style={styles.cancelBtn} onClick={handleCancel}>취소</button>
-                        <button type="submit" style={styles.submitBtn}>등록</button>
+                        <button type="submit" style={styles.submitBtn} disabled={submitting}>
+                            {submitting ? '등록 중...' : '등록'}
+                        </button>
                     </div>
                 </form>
             </div>
