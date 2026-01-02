@@ -132,7 +132,7 @@ const RoomGrid = () => {
                             )}
                             <div style={styles.content}>
                                 <h3 style={styles.name}>
-                                    {room.isPinned && <span style={styles.badge}>추천 업체</span>}
+                                    {room.isPinned && <span style={styles.badge}>추천 채널</span>}
                                     {room.name}
                                 </h3>
                                 <p style={styles.desc}>{room.desc}</p>
