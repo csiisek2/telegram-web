@@ -8,6 +8,8 @@ import {
     updateAllRightBanners,
     addRoom as addRoomAPI,
     deleteRoom as deleteRoomAPI,
+    deleteBanner,
+    deleteRightBanner,
     convertBannersFromDB,
     convertRoomsFromDB,
     convertRightBannersFromDB
@@ -544,6 +546,25 @@ const AdminPage = () => {
                                 >
                                     🔢
                                 </button>
+                                <button
+                                    onClick={async () => {
+                                        if (window.confirm('정말 삭제하시겠습니까?')) {
+                                            try {
+                                                await deleteBanner(banners[selectedBannerIndex].id);
+                                                await fetchAllData();
+                                                setSelectedBannerIndex(Math.max(0, selectedBannerIndex - 1));
+                                                showToast('배너가 삭제되었습니다!');
+                                            } catch (error) {
+                                                console.error('삭제 실패:', error);
+                                                showToast('삭제에 실패했습니다.', 'error');
+                                            }
+                                        }
+                                    }}
+                                    style={{ ...styles.moveBtn, backgroundColor: '#e74c3c', color: '#fff' }}
+                                    title="삭제"
+                                >
+                                    🗑️
+                                </button>
                             </div>
                         </div>
 
@@ -648,51 +669,140 @@ const AdminPage = () => {
             </section>
 
             <section style={styles.section}>
-                <h2>3. 우측 사이드바 (스페셜 업소) 관리 ({rightBanners.length}개)</h2>
-                <div style={styles.grid}>
-                    {rightBanners.map((banner, index) => (
-                        <div key={banner.id} style={styles.card}>
-                            <div style={styles.cardHeader}>
-                                <h3 style={styles.cardTitle}>스페셜 #{index + 1}</h3>
-                                <div style={styles.moveBtns}>
-                                    <button onClick={() => handleMove('rightBanners', index, 'up')} disabled={index === 0} style={styles.moveBtn}>▲</button>
-                                    <button onClick={() => handleMove('rightBanners', index, 'down')} disabled={index === rightBanners.length - 1} style={styles.moveBtn}>▼</button>
-                                </div>
+                <h2>3. 우측 사이드바 (스페셜 업소) 관리</h2>
+
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={styles.label}>우측 배너 선택:</label>
+                    <select
+                        value={selectedRightBannerIndex}
+                        onChange={(e) => setSelectedRightBannerIndex(Number(e.target.value))}
+                        style={styles.select}
+                    >
+                        {rightBanners.map((banner, index) => (
+                            <option key={banner.id} value={index}>
+                                우측 배너 #{index + 1} (스페셜 업소)
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {rightBanners[selectedRightBannerIndex] && (
+                    <div style={styles.editCard}>
+                        <div style={styles.cardHeader}>
+                            <h3 style={styles.cardTitle}>우측 배너 #{selectedRightBannerIndex + 1} 편집</h3>
+                            <div style={styles.moveBtns}>
+                                <button
+                                    onClick={() => handleMove('rightBanners', selectedRightBannerIndex, 'up')}
+                                    disabled={selectedRightBannerIndex === 0}
+                                    style={styles.moveBtn}
+                                >
+                                    ▲
+                                </button>
+                                <button
+                                    onClick={() => handleMove('rightBanners', selectedRightBannerIndex, 'down')}
+                                    disabled={selectedRightBannerIndex === rightBanners.length - 1}
+                                    style={styles.moveBtn}
+                                >
+                                    ▼
+                                </button>
+                                <button
+                                    onClick={() => openModal('jump', 'rightBanners', selectedRightBannerIndex)}
+                                    style={styles.moveBtn}
+                                    title="특정 위치로 이동"
+                                >
+                                    🔢
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        if (window.confirm('정말 삭제하시겠습니까?')) {
+                                            try {
+                                                await deleteRightBanner(rightBanners[selectedRightBannerIndex].id);
+                                                await fetchAllData();
+                                                setSelectedRightBannerIndex(Math.max(0, selectedRightBannerIndex - 1));
+                                                showToast('우측 배너가 삭제되었습니다!');
+                                            } catch (error) {
+                                                console.error('삭제 실패:', error);
+                                                showToast('삭제에 실패했습니다.', 'error');
+                                            }
+                                        }
+                                    }}
+                                    style={{ ...styles.moveBtn, backgroundColor: '#e74c3c', color: '#fff' }}
+                                    title="삭제"
+                                >
+                                    🗑️
+                                </button>
                             </div>
-                            <label style={styles.label}>제목:</label>
-                            <input type="text" value={banner.title} onChange={(e) => { const newBanners = [...rightBanners]; newBanners[index].title = e.target.value; setRightBanners(newBanners); }} style={styles.input} />
-                            <label style={styles.label}>설명:</label>
-                            <input type="text" value={banner.text} onChange={(e) => { const newBanners = [...rightBanners]; newBanners[index].text = e.target.value; setRightBanners(newBanners); }} style={styles.input} />
-                            <label style={styles.label}>링크:</label>
-                            <input type="text" value={banner.link} onChange={(e) => { const newBanners = [...rightBanners]; newBanners[index].link = e.target.value; setRightBanners(newBanners); }} style={styles.input} />
-                            <label style={styles.label}>이미지/동영상:</label>
-                            <input type="file" accept="image/*,video/mp4" onChange={async (e) => {
+                        </div>
+
+                        <label style={styles.label}>제목:</label>
+                        <input
+                            type="text"
+                            value={rightBanners[selectedRightBannerIndex].title}
+                            onChange={(e) => {
+                                const newBanners = [...rightBanners];
+                                newBanners[selectedRightBannerIndex].title = e.target.value;
+                                setRightBanners(newBanners);
+                            }}
+                            style={styles.input}
+                        />
+
+                        <label style={styles.label}>설명:</label>
+                        <input
+                            type="text"
+                            value={rightBanners[selectedRightBannerIndex].text}
+                            onChange={(e) => {
+                                const newBanners = [...rightBanners];
+                                newBanners[selectedRightBannerIndex].text = e.target.value;
+                                setRightBanners(newBanners);
+                            }}
+                            style={styles.input}
+                        />
+
+                        <label style={styles.label}>링크:</label>
+                        <input
+                            type="text"
+                            value={rightBanners[selectedRightBannerIndex].link}
+                            onChange={(e) => {
+                                const newBanners = [...rightBanners];
+                                newBanners[selectedRightBannerIndex].link = e.target.value;
+                                setRightBanners(newBanners);
+                            }}
+                            style={styles.input}
+                            placeholder="#"
+                        />
+
+                        <label style={styles.label}>이미지/동영상:</label>
+                        <input
+                            type="file"
+                            accept="image/*,video/mp4"
+                            onChange={async (e) => {
                                 const file = e.target.files[0];
                                 if (!file) return;
-                                console.log('우측 배너 업로드:', file.name);
-
                                 try {
                                     const compressedImage = await compressImage(file);
-                                    console.log('우측 배너 압축 완료, 원본:', file.size, '압축 후:', compressedImage.length);
                                     const newBanners = [...rightBanners];
-                                    newBanners[index].image = compressedImage;
+                                    newBanners[selectedRightBannerIndex].image = compressedImage;
                                     setRightBanners(newBanners);
                                     showToast('이미지가 업로드되었습니다! "우측 사이드바 저장" 버튼을 눌러 저장하세요.');
                                 } catch (error) {
                                     console.error('우측 배너 압축 실패:', error);
                                     showToast('이미지 업로드에 실패했습니다.', 'error');
                                 }
-                            }} style={styles.fileInput} key={`right-${banner.id}`} />
-                            <div style={styles.preview}>
-                                {banner.image ? (
-                                    banner.image.startsWith('data:video') ?
-                                        <video src={banner.image} autoPlay loop muted playsInline style={{ maxWidth: '100%', maxHeight: '100px' }} /> :
-                                        <img src={banner.image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '100px' }} />
-                                ) : <div style={{ color: '#aaa' }}>이미지 없음</div>}
-                            </div>
+                            }}
+                            style={styles.fileInput}
+                            key={`right-${rightBanners[selectedRightBannerIndex].id}`}
+                        />
+
+                        <div style={styles.preview}>
+                            {rightBanners[selectedRightBannerIndex].image ? (
+                                rightBanners[selectedRightBannerIndex].image.startsWith('data:video') ?
+                                    <video src={rightBanners[selectedRightBannerIndex].image} autoPlay loop muted playsInline style={{ maxWidth: '100%', maxHeight: '150px' }} /> :
+                                    <img src={rightBanners[selectedRightBannerIndex].image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '150px' }} />
+                            ) : <div style={{ color: '#aaa', padding: '20px', textAlign: 'center' }}>이미지 없음</div>}
                         </div>
-                    ))}
-                </div>
+                    </div>
+                )}
+
                 <button onClick={async () => {
                     setLoading(true);
                     try {

@@ -236,6 +236,21 @@ export const updateAllRightBanners = async (banners) => {
     }
 };
 
+export const deleteRightBanner = async (id) => {
+    try {
+        const { error } = await supabase
+            .from('site_config')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('deleteRightBanner error:', error);
+        throw error;
+    }
+};
+
 // ==================== HELPER FUNCTIONS ====================
 
 // Convert Supabase data to frontend format
