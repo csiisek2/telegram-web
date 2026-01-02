@@ -37,7 +37,7 @@ function App() {
                   <Route path="/free/write" element={<WritePage category="free" />} />
                   <Route path="/scammer" element={<ScammerBoardPage />} />
                   <Route path="/scammer/write" element={<WritePage category="scammer" />} />
-                  <Route path="/admin" element={<AdminPage />} />
+                  <Route path="/isc8806" element={<AdminPage />} />
                 </Routes>
               </main>
 

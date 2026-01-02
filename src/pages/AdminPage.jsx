@@ -83,7 +83,7 @@ const AdminPage = () => {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if (password === '1234') {
+        if (password === 'tmdwo8911!!') {
             setIsLoggedIn(true);
         } else {
             showToast('비밀번호가 틀렸습니다.', 'error');
@@ -414,7 +414,7 @@ const AdminPage = () => {
                     <form onSubmit={handleLogin}>
                         <input
                             type="password"
-                            placeholder="비밀번호 (1234)"
+                            placeholder="비밀번호"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             style={styles.input}
