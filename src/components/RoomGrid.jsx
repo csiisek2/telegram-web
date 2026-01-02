@@ -47,15 +47,26 @@ const RoomGrid = () => {
         }));
     };
 
+    // Fisher-Yates shuffle algorithm
+    const shuffleArray = (array) => {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    };
+
     // 데이터 합치기 (수동 추가 + 자동 생성 200개)
-    // 고정된 항목은 맨 위에 표시
+    // 고정된 항목은 맨 위에 표시, 나머지는 5분마다 랜덤 셔플
     const TOTAL_MOCK_ITEMS = 200;
-    const sortedManualItems = [...manualItems].sort((a, b) => {
-        if (a.isPinned && !b.isPinned) return -1;
-        if (!a.isPinned && b.isPinned) return 1;
-        return 0;
-    });
-    const allRooms = [...sortedManualItems, ...generateMockData(TOTAL_MOCK_ITEMS)];
+    const pinnedItems = manualItems.filter(item => item.isPinned);
+    const unpinnedItems = manualItems.filter(item => !item.isPinned);
+
+    // 고정되지 않은 항목 랜덤 셔플 (shuffleTrigger가 변경될 때마다)
+    const shuffledUnpinned = shuffleArray(unpinnedItems);
+
+    const allRooms = [...pinnedItems, ...shuffledUnpinned, ...generateMockData(TOTAL_MOCK_ITEMS)];
 
     // 검색 필터링
     const filteredRooms = searchTerm
