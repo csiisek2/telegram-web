@@ -994,59 +994,6 @@ const AdminPage = () => {
                 </div>
             </section>
 
-            <section style={styles.section}>
-                <h2>5. 회원 관리</h2>
-
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                        <thead>
-                            <tr style={{ backgroundColor: '#f9f9f9', borderBottom: '2px solid #ddd' }}>
-                                <th style={{ padding: '10px', textAlign: 'left' }}>닉네임</th>
-                                <th style={{ padding: '10px', textAlign: 'left' }}>이메일</th>
-                                <th style={{ padding: '10px', textAlign: 'center' }}>관리</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {users.map((user) => (
-                                <tr key={user.id} style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={{ padding: '10px' }}>{user.nickname}</td>
-                                    <td style={{ padding: '10px' }}>{user.email}</td>
-                                    <td style={{ padding: '10px', textAlign: 'center' }}>
-                                        <button
-                                            onClick={async () => {
-                                                if (window.confirm(`${user.nickname} 회원을 정말 탈퇴시키겠습니까?\n\n이 회원이 등록한 모든 채널이 삭제됩니다.`)) {
-                                                    try {
-                                                        await deleteUserData(user.id);
-                                                        await fetchAllData();
-                                                        showToast('회원이 탈퇴 처리되었습니다!');
-                                                    } catch (error) {
-                                                        console.error('회원 삭제 실패:', error);
-                                                        showToast('회원 삭제에 실패했습니다.', 'error');
-                                                    }
-                                                }
-                                            }}
-                                            style={{
-                                                ...styles.actionBtn,
-                                                backgroundColor: '#e74c3c',
-                                                color: '#fff'
-                                            }}
-                                            title="회원 탈퇴"
-                                        >
-                                            탈퇴
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                    {users.length === 0 && (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
-                            등록된 회원이 없습니다.
-                        </div>
-                    )}
-                </div>
-            </section>
         </div>
     );
 };
