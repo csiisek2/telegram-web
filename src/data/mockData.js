@@ -50,7 +50,7 @@ export const initialBanners = [
         id: 1,
         title: '도살장',
         text: '도살장',
-        image: '/src/assets/dosaljang.jpg',
+        image: '/dosaljang.jpg',
         link: 'https://t.me/ehtkf'
     },
     { id: 2, title: '광고 문의', text: '입점 예정', link: '#' },
@@ -63,7 +63,7 @@ export const initialRecommendedRooms = [
         name: '도살장',
         desc: '자유홍보방',
         members: 2800,
-        image: '/src/assets/dosaljang.jpg',
+        image: '/dosaljang.jpg',
         link: 'https://t.me/ehtkf',
         isPinned: false
     }

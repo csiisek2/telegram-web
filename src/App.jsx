@@ -7,7 +7,6 @@ import RightSidebar from './components/RightSidebar';
 import Footer from './components/Footer';
 import SEO from './components/SEO';
 import AuthModal from './components/AuthModal';
-import SupabaseTest from './components/SupabaseTest';
 import Home from './pages/Home';
 import FreeBoardPage from './pages/FreeBoardPage';
 import ScammerBoardPage from './pages/ScammerBoardPage';
@@ -48,7 +47,6 @@ function App() {
             </div>
 
             <Footer />
-            <SupabaseTest />
           </div>
         </Router>
       </AuthProvider>
