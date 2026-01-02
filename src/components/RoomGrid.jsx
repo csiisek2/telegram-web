@@ -110,7 +110,7 @@ const RoomGrid = () => {
                     <p style={{ fontSize: '14px', color: '#888' }}>다른 검색어를 시도해보세요.</p>
                 </div>
             ) : (
-                <div style={styles.grid}>
+                <div style={styles.grid} className="room-grid">
                     {currentItems.map((room) => (
                         <div
                             key={room.id}
@@ -203,7 +203,7 @@ const styles = {
     },
     grid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', // Responsive, approx 4 cols on desktop
+        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
         gap: '16px',
         marginBottom: '32px',
     },

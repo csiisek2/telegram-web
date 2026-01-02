@@ -27,7 +27,9 @@ function App() {
             <div style={styles.mainContainer}>
 
               {/* Left Sidebar (Login & Banners) */}
-              <Sidebar />
+              <div className="mobile-hide">
+                <Sidebar />
+              </div>
 
               {/* Center Main Content */}
               <main style={styles.contentArea}>
@@ -42,7 +44,9 @@ function App() {
               </main>
 
               {/* Right Sidebar (Ads) */}
-              <RightSidebar />
+              <div className="mobile-hide">
+                <RightSidebar />
+              </div>
 
             </div>
 
@@ -56,7 +60,7 @@ function App() {
 
 const styles = {
   mainContainer: {
-    maxWidth: '1300px', // Increased width for 3 columns
+    maxWidth: '1300px',
     margin: '24px auto',
     padding: '0 16px',
     display: 'flex',
@@ -66,6 +70,14 @@ const styles = {
   contentArea: {
     flex: 1,
     minWidth: 0,
+    width: '100%',
+  },
+  '@media (max-width: 768px)': {
+    mainContainer: {
+      margin: '12px auto',
+      padding: '0 8px',
+      gap: '0',
+    }
   }
 };
 

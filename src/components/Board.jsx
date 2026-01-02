@@ -151,15 +151,16 @@ const Board = ({ boardTitle = '자유게시판', boardCategory = '자유', id, p
 
             {viewMode === 'list' && (
                 <>
-                    <table style={styles.table}>
-                        <thead>
-                            <tr style={styles.thRow}>
-                                <th style={styles.thTitle}>제목</th>
-                                <th style={styles.th}>작성자</th>
-                                <th style={styles.th}>작성일</th>
-                                <th style={styles.th}>조회</th>
-                            </tr>
-                        </thead>
+                    <div className="board-table-wrapper">
+                        <table style={styles.table}>
+                            <thead>
+                                <tr style={styles.thRow}>
+                                    <th style={styles.thTitle}>제목</th>
+                                    <th style={styles.th} className="mobile-hide-col">작성자</th>
+                                    <th style={styles.th} className="mobile-hide-col">작성일</th>
+                                    <th style={styles.th}>조회</th>
+                                </tr>
+                            </thead>
                         <tbody>
                             {currentItems.length > 0 ? (
                                 currentItems.map((post) => (
@@ -168,8 +169,8 @@ const Board = ({ boardTitle = '자유게시판', boardCategory = '자유', id, p
                                             {post.pinned && <span style={styles.pinnedBadge}>📌 </span>}
                                             {post.title}
                                         </td>
-                                        <td style={styles.td}>{post.author}</td>
-                                        <td style={styles.td}>{new Date(post.created_at).toLocaleDateString()}</td>
+                                        <td style={styles.td} className="mobile-hide-col">{post.author}</td>
+                                        <td style={styles.td} className="mobile-hide-col">{new Date(post.created_at).toLocaleDateString()}</td>
                                         <td style={styles.td}>{post.views}</td>
                                     </tr>
                                 ))
@@ -181,7 +182,8 @@ const Board = ({ boardTitle = '자유게시판', boardCategory = '자유', id, p
                                 </tr>
                             )}
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
 
                     {/* Pagination Controls - Hide in Preview Mode */}
                     {!preview && filteredPosts.length > 0 && (

@@ -67,13 +67,14 @@ const Header = () => {
     <header style={styles.header}>
       <div className="container" style={styles.container}>
         {/* Top Bar: Logo & Search */}
-        <div style={styles.topBar}>
+        <div style={styles.topBar} className="header-top">
           <div
             style={{ ...styles.logoArea, cursor: 'pointer' }}
             onClick={() => {
               navigate('/');
               setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
             }}
+            className="header-logo"
           >
             <div style={styles.icon}>
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '32px', height: '32px' }}>
@@ -81,21 +82,21 @@ const Header = () => {
                 <path d="M17.03 8.35L15.39 16.35C15.27 16.89 14.95 17.06 14.49 16.81L11.99 14.95L10.78 16.12C10.65 16.25 10.54 16.36 10.28 16.36L10.46 13.8L15.15 9.53C15.36 9.35 15.11 9.24 14.83 9.41L9.03 13.08L6.53 12.3C5.99 12.13 5.98 11.76 6.64 11.5L16.41 7.74C16.86 7.56 17.26 7.84 17.03 8.35Z" fill="white" />
               </svg>
             </div>
-            <h1 style={styles.title}>텔레그램 홍보방</h1>
+            <h1 style={styles.title} className="header-title">텔레그램 홍보방</h1>
           </div>
 
-          <div style={styles.rightSection}>
+          <div style={styles.rightSection} className="header-right">
             {/* 현재 이용자 수 표시 */}
-            <div style={styles.visitorCounter}>
+            <div style={styles.visitorCounter} className="mobile-hide">
               <span style={styles.onlineIndicator}>●</span>
               <span style={styles.visitorLabel}>현재 이용자</span>
               <span style={styles.visitorCount}>{visitorCount.toLocaleString()}</span>
             </div>
 
-            <div style={styles.searchBar}>
+            <div style={styles.searchBar} className="header-search">
               <input
                 type="text"
-                placeholder="방 검색 (예: 코인, 주식)"
+                placeholder="방 검색"
                 style={styles.searchInput}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
