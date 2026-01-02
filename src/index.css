@@ -161,3 +161,17 @@ button {
     font-size: 13px !important;
   }
 }
+
+/* Power Links responsive */
+@media (max-width: 768px) {
+  .footer .powerLinksGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer .powerLinksGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
