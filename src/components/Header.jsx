@@ -68,7 +68,13 @@ const Header = () => {
       <div className="container" style={styles.container}>
         {/* Top Bar: Logo & Search */}
         <div style={styles.topBar}>
-          <div style={styles.logoArea}>
+          <div
+            style={{ ...styles.logoArea, cursor: 'pointer' }}
+            onClick={() => {
+              navigate('/');
+              setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+            }}
+          >
             <div style={styles.icon}>
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '32px', height: '32px' }}>
                 <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" fill="#2481CC" />
@@ -102,10 +108,48 @@ const Header = () => {
 
         {/* Navigation */}
         <nav style={styles.nav}>
-          <a href="#home" style={styles.navLink}>홈</a>
-          <a href="#home" style={styles.navLink}>인기순위</a>
-          <a href="#scammer-board" style={styles.navLink}>사기 업체</a>
-          <a href="#free-board" style={styles.navLink}>자유게시판</a>
+          <a
+            href="/"
+            style={styles.navLink}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/');
+              setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+            }}
+          >
+            홈
+          </a>
+          <a
+            href="/"
+            style={styles.navLink}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/');
+              setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+            }}
+          >
+            인기순위
+          </a>
+          <a
+            href="/scammer"
+            style={styles.navLink}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/scammer');
+            }}
+          >
+            사기 업체
+          </a>
+          <a
+            href="/free"
+            style={styles.navLink}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/free');
+            }}
+          >
+            자유게시판
+          </a>
           <a href="https://t.me/dosal7777" target="_blank" rel="noopener noreferrer" style={styles.navLink}>고객센터</a>
         </nav>
       </div>
