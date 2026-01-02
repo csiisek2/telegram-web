@@ -20,10 +20,6 @@ import {
     deletePost,
     togglePinPost
 } from '../api/posts';
-import {
-    getAllUsers,
-    deleteUserData
-} from '../api/users';
 
 const AdminPage = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -38,9 +34,6 @@ const AdminPage = () => {
     // Posts State
     const [posts, setPosts] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('all'); // 'all', 'free', 'scammer'
-
-    // Users State
-    const [users, setUsers] = useState([]);
 
     // Selected indices for dropdown editing
     const [selectedBannerIndex, setSelectedBannerIndex] = useState(0);
@@ -68,19 +61,17 @@ const AdminPage = () => {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [bannersData, roomsData, rightBannersData, postsData, usersData] = await Promise.all([
+            const [bannersData, roomsData, rightBannersData, postsData] = await Promise.all([
                 getBanners(),
                 getRooms(),
                 getRightBanners(),
-                getAllPosts(),
-                getAllUsers()
+                getAllPosts()
             ]);
 
             setBanners(convertBannersFromDB(bannersData));
             setRooms(convertRoomsFromDB(roomsData));
             setRightBanners(convertRightBannersFromDB(rightBannersData));
-            setPosts(postsData);
-            setUsers(usersData);
+            setPosts(postsData || []);
         } catch (error) {
             console.error('데이터 로드 실패:', error);
             showToast('데이터 로드에 실패했습니다.', 'error');
