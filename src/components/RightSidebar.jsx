@@ -42,7 +42,7 @@ const RightSidebar = () => {
 
 const styles = {
     sidebar: {
-        width: '180px',
+        width: '320px', // 180px → 320px (더 넓게)
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
