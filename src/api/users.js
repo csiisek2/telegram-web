@@ -143,3 +143,50 @@ export const liftSuspension = async (userId) => {
         throw error;
     }
 };
+
+/**
+ * Set partnership duration for user
+ * @param {string} userId - User ID
+ * @param {number} days - Number of days for partnership
+ */
+export const setPartnershipDuration = async (userId, days) => {
+    try {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + days);
+
+        const { error } = await supabase
+            .from('users')
+            .update({
+                partnership_expires_at: expiresAt.toISOString(),
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', userId);
+
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('setPartnershipDuration error:', error);
+        throw error;
+    }
+};
+
+/**
+ * Remove partnership from user
+ */
+export const removePartnership = async (userId) => {
+    try {
+        const { error } = await supabase
+            .from('users')
+            .update({
+                partnership_expires_at: null,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', userId);
+
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('removePartnership error:', error);
+        throw error;
+    }
+};

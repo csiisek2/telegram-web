@@ -1,8 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 const LoginBox = () => {
     const { isLoggedIn, currentUser, logout, openAuthModal } = useAuth();
+    const [partnershipDays, setPartnershipDays] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (isLoggedIn && currentUser?.id) {
+            fetchPartnershipInfo();
+        }
+    }, [isLoggedIn, currentUser]);
+
+    const fetchPartnershipInfo = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .select('partnership_expires_at')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (error) throw error;
+
+            if (data?.partnership_expires_at) {
+                const expiresAt = new Date(data.partnership_expires_at);
+                const now = new Date();
+                const daysLeft = Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24));
+
+                if (daysLeft > 0) {
+                    setPartnershipDays(daysLeft);
+                } else {
+                    setPartnershipDays(null);
+                }
+            } else {
+                setPartnershipDays(null);
+            }
+        } catch (error) {
+            console.error('Partnership fetch error:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (isLoggedIn) {
         return (
@@ -12,6 +52,14 @@ const LoginBox = () => {
                         <span style={styles.welcomeText}>{currentUser?.nickname}님</span>
                         <span style={styles.welcomeSubText}>환영합니다!</span>
                     </div>
+
+                    {partnershipDays !== null && (
+                        <div style={styles.partnershipBox}>
+                            <span style={styles.partnershipLabel}>🎉 제휴 기간</span>
+                            <span style={styles.partnershipDays}>{partnershipDays}일 남음</span>
+                        </div>
+                    )}
+
                     <button onClick={logout} style={styles.logoutBtn}>
                         로그아웃
                     </button>
@@ -139,6 +187,26 @@ const styles = {
         width: '100%',
         border: '1px solid #ddd',
         cursor: 'pointer',
+    },
+    partnershipBox: {
+        backgroundColor: '#e3f2fd',
+        border: '2px solid #1976d2',
+        borderRadius: '12px',
+        padding: '12px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px',
+        alignItems: 'center',
+    },
+    partnershipLabel: {
+        fontSize: '12px',
+        color: '#1976d2',
+        fontWeight: '600',
+    },
+    partnershipDays: {
+        fontSize: '18px',
+        color: '#1976d2',
+        fontWeight: 'bold',
     },
 };
 

@@ -4,23 +4,23 @@ import {
     deleteUser as deleteUserAPI,
     suspendUser,
     permanentlyBanUser,
-    liftSuspension
+    liftSuspension,
+    setPartnershipDuration,
+    removePartnership
 } from '../api/users';
 
 const RegisterAdminPage = () => {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [password, setPassword] = useState('');
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState(null);
-    const [formData, setFormData] = useState({
-        email: '',
-        username: '',
-        age: '',
-        password: ''
-    });
 
     useEffect(() => {
-        fetchRecentUsers();
-    }, []);
+        if (isLoggedIn) {
+            fetchRecentUsers();
+        }
+    }, [isLoggedIn]);
 
     const fetchRecentUsers = async () => {
         setLoading(true);
@@ -40,62 +40,63 @@ const RegisterAdminPage = () => {
         }
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+    const handleLogin = (e) => {
+        e.preventDefault();
+        if (password === 'tmdwo8911!!') {
+            setIsLoggedIn(true);
+            showToast('로그인 성공!', 'success');
+        } else {
+            showToast('비밀번호가 틀렸습니다.', 'error');
+        }
     };
 
-    const handleRegister = async (e) => {
-        e.preventDefault();
-
-        if (!formData.email || !formData.username || !formData.age) {
-            showToast('모든 필드를 입력해주세요', 'error');
-            return;
-        }
-
-        try {
-            const { data, error } = await supabase
-                .from('users')
-                .insert([
-                    {
-                        email: formData.email,
-                        username: formData.username,
-                        age: parseInt(formData.age),
-                        is_active: true
-                    }
-                ])
-                .select();
-
-            if (error) {
-                if (error.code === '23505') { // Unique violation
-                    showToast('이미 등록된 이메일입니다', 'error');
-                } else {
-                    throw error;
-                }
-                return;
-            }
-
-            showToast('회원 등록이 완료되었습니다!', 'success');
-            setFormData({
-                email: '',
-                username: '',
-                age: '',
-                password: ''
-            });
-            fetchRecentUsers();
-        } catch (error) {
-            console.error('handleRegister error:', error);
-            showToast('회원 등록에 실패했습니다', 'error');
-        }
+    const handleLogout = () => {
+        setIsLoggedIn(false);
+        setPassword('');
+        showToast('로그아웃 되었습니다.');
     };
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
         setTimeout(() => setToast(null), 3000);
     };
+
+    // Login Form
+    if (!isLoggedIn) {
+        return (
+            <div style={styles.container}>
+                {/* Toast Notification */}
+                {toast && (
+                    <div style={{
+                        ...styles.toast,
+                        backgroundColor: toast.type === 'success' ? '#4caf50' : '#f44336'
+                    }}>
+                        {toast.message}
+                    </div>
+                )}
+
+                <div style={styles.loginContainer}>
+                    <div style={styles.loginBox}>
+                        <h1 style={styles.loginTitle}>회원 관리 페이지</h1>
+                        <p style={styles.loginSubtitle}>관리자 인증이 필요합니다</p>
+                        <form onSubmit={handleLogin} style={styles.loginForm}>
+                            <input
+                                type="password"
+                                placeholder="관리자 비밀번호"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                style={styles.loginInput}
+                                required
+                            />
+                            <button type="submit" style={styles.loginBtn}>
+                                로그인
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={styles.container}>
@@ -110,60 +111,14 @@ const RegisterAdminPage = () => {
             )}
 
             <div style={styles.header}>
-                <h1 style={styles.title}>회원 관리</h1>
-                <p style={styles.subtitle}>회원 등록 및 관리를 위한 전용 페이지</p>
+                <div>
+                    <h1 style={styles.title}>회원 관리</h1>
+                    <p style={styles.subtitle}>회원 제휴 기간 관리 전용 페이지</p>
+                </div>
+                <button onClick={handleLogout} style={styles.logoutBtn}>
+                    로그아웃
+                </button>
             </div>
-
-            {/* Registration Form */}
-            <section style={styles.section}>
-                <h2 style={styles.sectionTitle}>새 회원 등록</h2>
-                <form onSubmit={handleRegister} style={styles.form}>
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>이메일 *</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            style={styles.input}
-                            placeholder="user@example.com"
-                            required
-                        />
-                    </div>
-
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>닉네임 (@username) *</label>
-                        <input
-                            type="text"
-                            name="username"
-                            value={formData.username}
-                            onChange={handleInputChange}
-                            style={styles.input}
-                            placeholder="@username"
-                            required
-                        />
-                    </div>
-
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>나이 *</label>
-                        <input
-                            type="number"
-                            name="age"
-                            value={formData.age}
-                            onChange={handleInputChange}
-                            style={styles.input}
-                            placeholder="예: 25"
-                            min="1"
-                            max="120"
-                            required
-                        />
-                    </div>
-
-                    <button type="submit" style={styles.submitBtn}>
-                        회원 등록
-                    </button>
-                </form>
-            </section>
 
             {/* User Management */}
             <section style={styles.section}>
@@ -180,6 +135,7 @@ const RegisterAdminPage = () => {
                                     <th style={styles.th}>나이</th>
                                     <th style={styles.th}>가입일</th>
                                     <th style={styles.th}>상태</th>
+                                    <th style={styles.th}>제휴기간</th>
                                     <th style={styles.th}>관리</th>
                                 </tr>
                             </thead>
@@ -189,6 +145,10 @@ const RegisterAdminPage = () => {
                                     const suspendedUntil = user.suspended_until ? new Date(user.suspended_until) : null;
                                     const isSuspended = suspendedUntil && suspendedUntil > now;
                                     const isPermanentlyBanned = user.is_permanently_banned;
+
+                                    const partnershipExpiresAt = user.partnership_expires_at ? new Date(user.partnership_expires_at) : null;
+                                    const hasPartnership = partnershipExpiresAt && partnershipExpiresAt > now;
+                                    const partnershipDaysLeft = hasPartnership ? Math.ceil((partnershipExpiresAt - now) / (1000 * 60 * 60 * 24)) : 0;
 
                                     return (
                                         <tr key={user.id} style={styles.tableRow}>
@@ -212,72 +172,126 @@ const RegisterAdminPage = () => {
                                                 )}
                                             </td>
                                             <td style={styles.td}>
-                                                <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                                    {(isSuspended || isPermanentlyBanned) ? (
+                                                {hasPartnership ? (
+                                                    <span style={{ color: '#1976d2', fontWeight: 'bold' }}>
+                                                        {partnershipDaysLeft}일 남음
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ color: '#999' }}>없음</span>
+                                                )}
+                                            </td>
+                                            <td style={styles.td}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                    {/* User Status Controls */}
+                                                    <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                                        {(isSuspended || isPermanentlyBanned) ? (
+                                                            <button
+                                                                onClick={async () => {
+                                                                    if (window.confirm('정지를 해제하시겠습니까?')) {
+                                                                        await liftSuspension(user.id);
+                                                                        await fetchRecentUsers();
+                                                                        showToast('정지가 해제되었습니다!');
+                                                                    }
+                                                                }}
+                                                                style={styles.actionBtn}
+                                                            >
+                                                                해제
+                                                            </button>
+                                                        ) : (
+                                                            <>
+                                                                <input
+                                                                    type="number"
+                                                                    min="1"
+                                                                    placeholder="일수"
+                                                                    id={`suspend-days-${user.id}`}
+                                                                    style={styles.daysInput}
+                                                                />
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        const days = parseInt(document.getElementById(`suspend-days-${user.id}`).value);
+                                                                        if (!days || days < 1) {
+                                                                            showToast('일수를 입력해주세요 (1일 이상)', 'error');
+                                                                            return;
+                                                                        }
+                                                                        if (window.confirm(`${days}일간 정지하시겠습니까?`)) {
+                                                                            await suspendUser(user.id, days);
+                                                                            await fetchRecentUsers();
+                                                                            showToast(`${days}일간 정지되었습니다!`);
+                                                                        }
+                                                                    }}
+                                                                    style={styles.actionBtn}
+                                                                >
+                                                                    정지
+                                                                </button>
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        if (window.confirm('정말 영구정지 하시겠습니까?')) {
+                                                                            await permanentlyBanUser(user.id);
+                                                                            await fetchRecentUsers();
+                                                                            showToast('영구정지되었습니다!');
+                                                                        }
+                                                                    }}
+                                                                    style={styles.actionBtn}
+                                                                >
+                                                                    영구
+                                                                </button>
+                                                            </>
+                                                        )}
                                                         <button
                                                             onClick={async () => {
-                                                                if (window.confirm('정지를 해제하시겠습니까?')) {
-                                                                    await liftSuspension(user.id);
+                                                                if (window.confirm('정말 탈퇴 처리하시겠습니까?')) {
+                                                                    await deleteUserAPI(user.id);
                                                                     await fetchRecentUsers();
-                                                                    showToast('정지가 해제되었습니다!');
+                                                                    showToast('회원이 삭제되었습니다!');
                                                                 }
                                                             }}
-                                                            style={styles.actionBtn}
+                                                            style={{...styles.actionBtn, backgroundColor: '#f44336'}}
                                                         >
-                                                            해제
+                                                            탈퇴
                                                         </button>
-                                                    ) : (
-                                                        <>
-                                                            <input
-                                                                type="number"
-                                                                min="1"
-                                                                placeholder="일수"
-                                                                id={`suspend-days-${user.id}`}
-                                                                style={styles.daysInput}
-                                                            />
+                                                    </div>
+
+                                                    {/* Partnership Controls */}
+                                                    <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap', borderTop: '1px solid #eee', paddingTop: '8px' }}>
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            placeholder="제휴일"
+                                                            id={`partnership-days-${user.id}`}
+                                                            style={styles.daysInput}
+                                                        />
+                                                        <button
+                                                            onClick={async () => {
+                                                                const days = parseInt(document.getElementById(`partnership-days-${user.id}`).value);
+                                                                if (!days || days < 1) {
+                                                                    showToast('제휴 일수를 입력해주세요', 'error');
+                                                                    return;
+                                                                }
+                                                                if (window.confirm(`${days}일 제휴 기간을 설정하시겠습니까?`)) {
+                                                                    await setPartnershipDuration(user.id, days);
+                                                                    await fetchRecentUsers();
+                                                                    showToast(`${days}일 제휴 설정 완료!`);
+                                                                }
+                                                            }}
+                                                            style={{...styles.actionBtn, backgroundColor: '#1976d2'}}
+                                                        >
+                                                            제휴설정
+                                                        </button>
+                                                        {hasPartnership && (
                                                             <button
                                                                 onClick={async () => {
-                                                                    const days = parseInt(document.getElementById(`suspend-days-${user.id}`).value);
-                                                                    if (!days || days < 1) {
-                                                                        showToast('일수를 입력해주세요 (1일 이상)', 'error');
-                                                                        return;
-                                                                    }
-                                                                    if (window.confirm(`${days}일간 정지하시겠습니까?`)) {
-                                                                        await suspendUser(user.id, days);
+                                                                    if (window.confirm('제휴를 해제하시겠습니까?')) {
+                                                                        await removePartnership(user.id);
                                                                         await fetchRecentUsers();
-                                                                        showToast(`${days}일간 정지되었습니다!`);
+                                                                        showToast('제휴가 해제되었습니다!');
                                                                     }
                                                                 }}
-                                                                style={styles.actionBtn}
+                                                                style={{...styles.actionBtn, backgroundColor: '#757575'}}
                                                             >
-                                                                정지
+                                                                제휴해제
                                                             </button>
-                                                            <button
-                                                                onClick={async () => {
-                                                                    if (window.confirm('정말 영구정지 하시겠습니까?')) {
-                                                                        await permanentlyBanUser(user.id);
-                                                                        await fetchRecentUsers();
-                                                                        showToast('영구정지되었습니다!');
-                                                                    }
-                                                                }}
-                                                                style={styles.actionBtn}
-                                                            >
-                                                                영구
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                    <button
-                                                        onClick={async () => {
-                                                            if (window.confirm('정말 탈퇴 처리하시겠습니까?')) {
-                                                                await deleteUserAPI(user.id);
-                                                                await fetchRecentUsers();
-                                                                showToast('회원이 삭제되었습니다!');
-                                                            }
-                                                        }}
-                                                        style={{...styles.actionBtn, backgroundColor: '#f44336'}}
-                                                    >
-                                                        탈퇴
-                                                    </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -316,10 +330,72 @@ const styles = {
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     },
     header: {
-        textAlign: 'center',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: '40px',
         paddingBottom: '20px',
         borderBottom: '2px solid #0088cc',
+    },
+    loginContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '70vh',
+    },
+    loginBox: {
+        backgroundColor: '#fff',
+        borderRadius: '12px',
+        padding: '40px',
+        border: '2px solid #0088cc',
+        boxShadow: '0 4px 12px rgba(0, 136, 204, 0.2)',
+        maxWidth: '400px',
+        width: '100%',
+    },
+    loginTitle: {
+        fontSize: '28px',
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: '10px',
+        textAlign: 'center',
+    },
+    loginSubtitle: {
+        fontSize: '14px',
+        color: '#666',
+        marginBottom: '30px',
+        textAlign: 'center',
+    },
+    loginForm: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '15px',
+    },
+    loginInput: {
+        padding: '14px 16px',
+        border: '1px solid #ddd',
+        borderRadius: '8px',
+        fontSize: '15px',
+        outline: 'none',
+    },
+    loginBtn: {
+        padding: '14px',
+        backgroundColor: '#0088cc',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '16px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+    },
+    logoutBtn: {
+        padding: '10px 20px',
+        backgroundColor: '#f44336',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: '600',
+        cursor: 'pointer',
     },
     title: {
         fontSize: '32px',
