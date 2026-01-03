@@ -81,19 +81,16 @@ const styles = {
         color: '#fff',
         textAlign: 'center',
         cursor: 'pointer',
-        minHeight: '150px',
-        aspectRatio: '16 / 9', // 가로형 배너
+        height: '100px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        overflow: 'hidden',
     },
     bannerImage: {
         width: '100%',
         height: '100%',
-        objectFit: 'contain', // 전체 이미지 표시
-        backgroundColor: '#f5f5f5',
+        objectFit: 'cover',
     },
     bannerTitle: {
         fontWeight: 'bold',

@@ -42,15 +42,14 @@ const RightSidebar = () => {
 
 const styles = {
     sidebar: {
-        width: '320px', // 180px → 320px (더 넓게)
+        width: '180px',
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
     },
     bannerItem: {
-        width: '100%',
-        aspectRatio: '4 / 5', // 세로형 배너 (인스타 스타일)
+        height: '240px',
         backgroundColor: '#f5f5f5',
         border: '1px solid #ddd',
         borderRadius: '8px',
@@ -60,7 +59,6 @@ const styles = {
         cursor: 'pointer',
         color: '#888',
         transition: 'background-color 0.2s',
-        overflow: 'hidden',
     },
     bannerContent: {
         textAlign: 'center',
@@ -77,8 +75,7 @@ const styles = {
     bannerImage: {
         width: '100%',
         height: '100%',
-        objectFit: 'contain', // 전체 이미지 표시
-        backgroundColor: '#f5f5f5',
+        objectFit: 'cover',
     }
 };
 
