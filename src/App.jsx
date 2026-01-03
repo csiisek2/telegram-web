@@ -32,7 +32,7 @@ function App() {
             <div style={styles.mainContainer}>
 
               {/* Left Sidebar (Login & Banners) */}
-              <div className="mobile-hide">
+              <div className="mobile-hide" style={{ position: 'sticky', top: '20px', alignSelf: 'flex-start' }}>
                 <Sidebar />
               </div>
 
