@@ -303,6 +303,8 @@ export const addPowerLink = async (powerLinkData) => {
                 name: powerLinkData.name,
                 link: powerLinkData.link,
                 display_order: powerLinkData.display_order || 0,
+                is_pinned: powerLinkData.isPinned || false,
+                pinned_position: powerLinkData.pinnedPosition || null,
             }])
             .select()
             .single();
@@ -322,6 +324,8 @@ export const updateAllPowerLinks = async (powerLinks) => {
             name: link.name,
             link: link.link,
             display_order: index,
+            is_pinned: link.isPinned || false,
+            pinned_position: link.pinnedPosition || null,
         }));
 
         const promises = updates.map(update =>
@@ -395,5 +399,7 @@ export const convertPowerLinksFromDB = (dbData) => {
         id: item.id,
         name: item.name,
         link: item.link,
+        isPinned: item.is_pinned || false,
+        pinnedPosition: item.pinned_position || null,
     }));
 };

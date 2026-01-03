@@ -421,6 +421,41 @@ const AdminPage = () => {
         setRooms(newRooms);
     };
 
+    const togglePowerLinkPin = (linkId) => {
+        const newLinks = [...powerLinks];
+        const link = newLinks.find(l => l.id === linkId);
+
+        if (!link) return;
+
+        // Get the pinned position from the input field or default to 1
+        const positionInput = link.pinnedPosition || 1;
+
+        if (!link.isPinned) {
+            // Pin the link with the specified position
+            link.isPinned = true;
+            link.pinnedPosition = positionInput;
+
+            // Sort: pinned items first by position, then unpinned items
+            newLinks.sort((a, b) => {
+                if (a.isPinned && !b.isPinned) return -1;
+                if (!a.isPinned && b.isPinned) return 1;
+                if (a.isPinned && b.isPinned) {
+                    return (a.pinnedPosition || 0) - (b.pinnedPosition || 0);
+                }
+                return 0;
+            });
+
+            showToast(`${positionInput}번 위치에 고정되었습니다!`);
+        } else {
+            // Unpin the link
+            link.isPinned = false;
+            link.pinnedPosition = null;
+            showToast('고정이 해제되었습니다!');
+        }
+
+        setPowerLinks(newLinks);
+    };
+
     const handleRoomSave = async () => {
         setLoading(true);
         try {
@@ -968,11 +1003,23 @@ const AdminPage = () => {
                         const newLink = {
                             name: '새 파워링크',
                             link: 'https://t.me/example',
-                            display_order: powerLinks.length
+                            display_order: 0  // Always add at position 1 (top)
                         };
                         await addPowerLinkAPI(newLink);
                         await fetchAllData();
-                        showToast('새 파워링크가 추가되었습니다!');
+                        showToast('새 파워링크가 1번 위치에 추가되었습니다!');
+
+                        // Scroll to the newly added item (first item)
+                        setTimeout(() => {
+                            const sections = document.querySelectorAll('section');
+                            const powerLinkSection = Array.from(sections).find(s => s.textContent.includes('파워링크 관리'));
+                            if (powerLinkSection) {
+                                const firstItem = powerLinkSection.querySelector('[style*="flex"][style*="gap"]');
+                                if (firstItem) {
+                                    firstItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                            }
+                        }, 300);
                     } catch (error) {
                         console.error('추가 실패:', error);
                         showToast('추가에 실패했습니다.', 'error');
@@ -1013,17 +1060,31 @@ const AdminPage = () => {
                                 </button>
                             </div>
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                <input
-                                    type="text"
-                                    value={link.name}
-                                    onChange={(e) => {
-                                        const newLinks = [...powerLinks];
-                                        newLinks[index].name = e.target.value;
-                                        setPowerLinks(newLinks);
-                                    }}
-                                    placeholder="채널 이름"
-                                    style={styles.inputSmall}
-                                />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    {link.isPinned && (
+                                        <span style={{
+                                            backgroundColor: '#f39c12',
+                                            color: '#fff',
+                                            padding: '2px 6px',
+                                            borderRadius: '8px',
+                                            fontSize: '9px',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            고정 #{link.pinnedPosition}
+                                        </span>
+                                    )}
+                                    <input
+                                        type="text"
+                                        value={link.name}
+                                        onChange={(e) => {
+                                            const newLinks = [...powerLinks];
+                                            newLinks[index].name = e.target.value;
+                                            setPowerLinks(newLinks);
+                                        }}
+                                        placeholder="채널 이름"
+                                        style={styles.inputSmall}
+                                    />
+                                </div>
                             </div>
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                 <input
@@ -1037,6 +1098,31 @@ const AdminPage = () => {
                                     placeholder="텔레그램 링크"
                                     style={styles.inputSmall}
                                 />
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={link.pinnedPosition || ''}
+                                    onChange={(e) => {
+                                        const newLinks = [...powerLinks];
+                                        newLinks[index].pinnedPosition = parseInt(e.target.value) || 1;
+                                        setPowerLinks(newLinks);
+                                    }}
+                                    placeholder="고정순서"
+                                    style={{ ...styles.inputSmall, width: '70px', fontSize: '11px' }}
+                                />
+                                <button
+                                    onClick={() => togglePowerLinkPin(link.id)}
+                                    style={{
+                                        ...styles.deleteBtn,
+                                        backgroundColor: link.isPinned ? '#e74c3c' : '#27ae60',
+                                        fontSize: '11px',
+                                        padding: '4px 8px'
+                                    }}
+                                >
+                                    {link.isPinned ? '고정해제' : '고정하기'}
+                                </button>
                             </div>
                             <button
                                 onClick={async () => {
