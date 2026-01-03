@@ -864,7 +864,7 @@ const AdminPage = () => {
                                                 <img src={room.image} alt="Preview" style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
                                         ) : <div style={{ width: '50px', height: '50px', background: '#eee' }}></div>}
                                     </div>
-                                    <div style={{ flex: 4, minWidth: '250px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <div style={{ flex: 4, minWidth: '180px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                             {room.isPinned && (
                                                 <span style={{
@@ -884,7 +884,7 @@ const AdminPage = () => {
                                         </div>
                                         <input type="text" value={room.desc} onChange={(e) => handleRoomChange(room.id, 'desc', e.target.value)} placeholder="설명" style={styles.inputSmall} />
                                     </div>
-                                    <div style={{ flex: 4, minWidth: '250px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <div style={{ flex: 4, minWidth: '180px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                         <input type="number" value={room.members} onChange={(e) => handleRoomChange(room.id, 'members', Number(e.target.value))} placeholder="인원수" style={styles.inputSmall} />
                                         <input type="text" value={room.link} onChange={(e) => handleRoomChange(room.id, 'link', e.target.value)} placeholder="링크" style={styles.inputSmall} />
                                     </div>
