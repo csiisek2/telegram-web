@@ -51,14 +51,15 @@ const styles = {
     bannerItem: {
         height: '240px',
         backgroundColor: '#f5f5f5',
-        border: '1px solid #ddd',
+        border: '2px solid #0088cc',
         borderRadius: '8px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
         color: '#888',
-        transition: 'background-color 0.2s',
+        transition: 'all 0.2s',
+        boxShadow: '0 2px 4px rgba(0, 136, 204, 0.1)',
     },
     bannerContent: {
         textAlign: 'center',
