@@ -16,6 +16,7 @@ const FreeBoardPage = lazy(() => import('./pages/FreeBoardPage'));
 const ScammerBoardPage = lazy(() => import('./pages/ScammerBoardPage'));
 const WritePage = lazy(() => import('./pages/WritePage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
+const RegisterAdminPage = lazy(() => import('./pages/RegisterAdminPage'));
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
                       <Route path="/scammer" element={<ScammerBoardPage />} />
                       <Route path="/scammer/write" element={<WritePage category="scammer" />} />
                       <Route path="/isc8806" element={<AdminPage />} />
+                      <Route path="/isc8807" element={<RegisterAdminPage />} />
                     </Routes>
                   </Suspense>
                 </main>
