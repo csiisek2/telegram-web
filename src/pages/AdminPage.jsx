@@ -274,10 +274,13 @@ const AdminPage = () => {
         }
     };
 
-    const handleRoomChange = (index, field, value) => {
+    const handleRoomChange = (roomId, field, value) => {
         const newRooms = [...rooms];
-        newRooms[index] = { ...newRooms[index], [field]: value };
-        setRooms(newRooms);
+        const roomIndex = newRooms.findIndex(r => r.id === roomId);
+        if (roomIndex !== -1) {
+            newRooms[roomIndex] = { ...newRooms[roomIndex], [field]: value };
+            setRooms(newRooms);
+        }
     };
 
     const handleRoomImageUpload = async (index, e) => {
@@ -365,9 +368,11 @@ const AdminPage = () => {
         }
     };
 
-    const togglePin = (index) => {
+    const togglePin = (roomId) => {
         const newRooms = [...rooms];
-        const room = newRooms[index];
+        const room = newRooms.find(r => r.id === roomId);
+
+        if (!room) return;
 
         // Get the pinned position from the input field or default to 1
         const positionInput = room.pinnedPosition || 1;
@@ -721,13 +726,13 @@ const AdminPage = () => {
                                                 추천
                                             </span>
                                         )}
-                                        <input type="text" value={room.name} onChange={(e) => handleRoomChange(index, 'name', e.target.value)} placeholder="방 이름" style={{ ...styles.inputSmall, flex: 1 }} />
+                                        <input type="text" value={room.name} onChange={(e) => handleRoomChange(room.id, 'name', e.target.value)} placeholder="방 이름" style={{ ...styles.inputSmall, flex: 1 }} />
                                     </div>
-                                    <input type="text" value={room.desc} onChange={(e) => handleRoomChange(index, 'desc', e.target.value)} placeholder="설명" style={styles.inputSmall} />
+                                    <input type="text" value={room.desc} onChange={(e) => handleRoomChange(room.id, 'desc', e.target.value)} placeholder="설명" style={styles.inputSmall} />
                                 </div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <input type="number" value={room.members} onChange={(e) => handleRoomChange(index, 'members', Number(e.target.value))} placeholder="인원수" style={styles.inputSmall} />
-                                    <input type="text" value={room.link} onChange={(e) => handleRoomChange(index, 'link', e.target.value)} placeholder="링크" style={styles.inputSmall} />
+                                    <input type="number" value={room.members} onChange={(e) => handleRoomChange(room.id, 'members', Number(e.target.value))} placeholder="인원수" style={styles.inputSmall} />
+                                    <input type="text" value={room.link} onChange={(e) => handleRoomChange(room.id, 'link', e.target.value)} placeholder="링크" style={styles.inputSmall} />
                                 </div>
                                 <div style={{ flex: 1 }}>
                                     <input
@@ -742,14 +747,14 @@ const AdminPage = () => {
                                     <input
                                         type="number"
                                         value={room.pinnedPosition || ''}
-                                        onChange={(e) => handleRoomChange(index, 'pinnedPosition', e.target.value ? Number(e.target.value) : null)}
+                                        onChange={(e) => handleRoomChange(room.id, 'pinnedPosition', e.target.value ? Number(e.target.value) : null)}
                                         placeholder="고정 순서"
                                         min="1"
                                         style={{ ...styles.inputSmall, width: '70px', textAlign: 'center' }}
                                     />
                                     <button
                                         type="button"
-                                        onClick={() => togglePin(index)}
+                                        onClick={() => togglePin(room.id)}
                                         style={{
                                             ...styles.pinBtn,
                                             backgroundColor: room.isPinned ? '#f39c12' : '#95a5a6',
