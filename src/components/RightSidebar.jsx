@@ -47,6 +47,9 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
+        position: 'sticky',
+        top: '20px',
+        alignSelf: 'flex-start',
     },
     bannerItem: {
         height: '240px',
