@@ -51,7 +51,7 @@ function App() {
               </main>
 
               {/* Right Sidebar (Ads) */}
-              <div className="mobile-hide">
+              <div className="mobile-hide" style={{ position: 'sticky', top: '20px', alignSelf: 'flex-start' }}>
                 <RightSidebar />
               </div>
 
