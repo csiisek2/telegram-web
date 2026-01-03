@@ -367,17 +367,35 @@ const AdminPage = () => {
 
     const togglePin = (index) => {
         const newRooms = [...rooms];
-        newRooms[index].isPinned = !newRooms[index].isPinned;
+        const room = newRooms[index];
 
-        // Sort: pinned items first
-        newRooms.sort((a, b) => {
-            if (a.isPinned && !b.isPinned) return -1;
-            if (!a.isPinned && b.isPinned) return 1;
-            return 0;
-        });
+        // Get the pinned position from the input field or default to 1
+        const positionInput = room.pinnedPosition || 1;
+
+        if (!room.isPinned) {
+            // Pin the room with the specified position
+            room.isPinned = true;
+            room.pinnedPosition = positionInput;
+
+            // Sort: pinned items first by position, then unpinned items
+            newRooms.sort((a, b) => {
+                if (a.isPinned && !b.isPinned) return -1;
+                if (!a.isPinned && b.isPinned) return 1;
+                if (a.isPinned && b.isPinned) {
+                    return (a.pinnedPosition || 0) - (b.pinnedPosition || 0);
+                }
+                return 0;
+            });
+
+            showToast(`${positionInput}번 위치에 고정되었습니다!`);
+        } else {
+            // Unpin the room
+            room.isPinned = false;
+            room.pinnedPosition = null;
+            showToast('고정이 해제되었습니다!');
+        }
 
         setRooms(newRooms);
-        showToast(newRooms[index].isPinned ? '상단에 고정되었습니다!' : '고정이 해제되었습니다!');
     };
 
     const handleRoomSave = async () => {
@@ -668,6 +686,9 @@ const AdminPage = () => {
                         .sort((a, b) => {
                             if (a.isPinned && !b.isPinned) return -1;
                             if (!a.isPinned && b.isPinned) return 1;
+                            if (a.isPinned && b.isPinned) {
+                                return (a.pinnedPosition || 0) - (b.pinnedPosition || 0);
+                            }
                             return 0;
                         })
                         .map((room, index) => (
@@ -717,17 +738,29 @@ const AdminPage = () => {
                                         key={`room-upload-${room.id}`}
                                     />
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={() => togglePin(index)}
-                                    style={{
-                                        ...styles.pinBtn,
-                                        backgroundColor: room.isPinned ? '#f39c12' : '#95a5a6'
-                                    }}
-                                    title={room.isPinned ? '고정 해제' : '상단에 고정'}
-                                >
-                                    {room.isPinned ? '📌 고정됨' : '📌 고정'}
-                                </button>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'center' }}>
+                                    <input
+                                        type="number"
+                                        value={room.pinnedPosition || ''}
+                                        onChange={(e) => handleRoomChange(index, 'pinnedPosition', e.target.value ? Number(e.target.value) : null)}
+                                        placeholder="고정 순서"
+                                        min="1"
+                                        style={{ ...styles.inputSmall, width: '70px', textAlign: 'center' }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => togglePin(index)}
+                                        style={{
+                                            ...styles.pinBtn,
+                                            backgroundColor: room.isPinned ? '#f39c12' : '#95a5a6',
+                                            fontSize: '11px',
+                                            padding: '4px 8px'
+                                        }}
+                                        title={room.isPinned ? '고정 해제' : '상단에 고정'}
+                                    >
+                                        {room.isPinned ? '고정됨' : '고정하기'}
+                                    </button>
+                                </div>
                                 <button type="button" onClick={() => openDeleteModal(index)} style={styles.deleteBtn}>삭제</button>
                             </div>
                         ))}

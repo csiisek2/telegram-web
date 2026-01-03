@@ -47,7 +47,9 @@ const RoomGrid = () => {
     // 데이터 합치기 (수동 추가 + 자동 생성 200개)
     // 고정된 항목은 맨 위에 표시, 나머지는 5분마다 랜덤 셔플
     const TOTAL_MOCK_ITEMS = 200;
-    const pinnedItems = manualItems.filter(item => item.isPinned);
+    const pinnedItems = manualItems
+        .filter(item => item.isPinned)
+        .sort((a, b) => (a.pinnedPosition || 0) - (b.pinnedPosition || 0)); // Sort by pinnedPosition
     const unpinnedItems = manualItems.filter(item => !item.isPinned);
 
     // 고정되지 않은 항목 랜덤 셔플 (shuffleTrigger가 변경될 때마다)
@@ -114,7 +116,7 @@ const RoomGrid = () => {
                             style={styles.card}
                             onClick={() => room.link ? window.open(room.link, '_blank') : null}
                         >
-                            {room.isPinned && <span style={styles.badge}>추천 채널</span>}
+                            {room.isPinned && <span style={styles.badge}>추천업체</span>}
                             {room.image ? (
                                 <div style={styles.imagePlaceholder}>
                                     {room.image.startsWith('data:video') ? (

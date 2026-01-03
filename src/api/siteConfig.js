@@ -137,6 +137,7 @@ export const addRoom = async (roomData) => {
                 members: roomData.members || 0,
                 display_order: roomData.display_order || 0,
                 is_pinned: roomData.isPinned || false,
+                pinned_position: roomData.pinnedPosition || null,
             }])
             .select()
             .single();
@@ -160,6 +161,7 @@ export const updateAllRooms = async (rooms) => {
             members: room.members || 0,
             display_order: index,
             is_pinned: room.isPinned || false,
+            pinned_position: room.pinnedPosition || null,
         }));
 
         const promises = updates.map(update =>
@@ -374,6 +376,7 @@ export const convertRoomsFromDB = (dbData) => {
         link: item.link,
         members: item.members || 0,
         isPinned: item.is_pinned || false,
+        pinnedPosition: item.pinned_position || null,
     }));
 };
 
