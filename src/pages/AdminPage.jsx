@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { uploadFile, deleteFile } from '../lib/storage';
 import {
     getBanners,
     getRooms,
@@ -259,18 +260,32 @@ const AdminPage = () => {
 
     const handleBannerImageUpload = async (index, e) => {
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file) {
+            console.log('파일 선택 취소');
+            return;
+        }
 
-        console.log('배너 업로드:', file.name, file.type, file.size);
+        // File size check (50MB limit - Supabase Storage limit)
+        if (file.size > 50 * 1024 * 1024) {
+            showToast('파일 크기가 너무 큽니다. 50MB 이하의 파일을 선택해주세요.', 'error');
+            e.target.value = '';
+            return;
+        }
+
+        console.log('배너 업로드 시작:', file.name, file.type, file.size);
 
         try {
-            const compressedImage = await compressImage(file);
-            console.log('배너 압축 완료, 원본:', file.size, '압축 후:', compressedImage.length);
-            handleBannerChange(index, 'image', compressedImage);
-            showToast('이미지가 업로드되었습니다! "배너 설정 저장" 버튼을 눌러 저장하세요.');
+            // Upload to Supabase Storage
+            const publicUrl = await uploadFile(file, 'banners');
+            console.log('배너 업로드 완료, URL:', publicUrl);
+
+            // Store the URL in the banner data
+            handleBannerChange(index, 'image', publicUrl);
+            showToast('✅ 이미지가 업로드되었습니다! 반드시 "배너 설정 저장" 버튼을 눌러 저장하세요.');
         } catch (error) {
-            console.error('배너 압축 실패:', error);
-            showToast('이미지 업로드에 실패했습니다.', 'error');
+            console.error('배너 업로드 실패:', error);
+            showToast(`이미지 업로드 실패: ${error.message}`, 'error');
+            e.target.value = '';
         }
     };
 
@@ -283,16 +298,16 @@ const AdminPage = () => {
         }
     };
 
-    const handleRoomImageUpload = async (index, e) => {
+    const handleRoomImageUpload = async (roomId, e) => {
         const file = e.target.files[0];
         if (!file) {
             console.log('파일 선택 취소');
             return;
         }
 
-        // File size check (10MB limit)
-        if (file.size > 10 * 1024 * 1024) {
-            showToast('파일 크기가 너무 큽니다. 10MB 이하의 파일을 선택해주세요.', 'error');
+        // File size check (50MB limit - Supabase Storage limit)
+        if (file.size > 50 * 1024 * 1024) {
+            showToast('파일 크기가 너무 큽니다. 50MB 이하의 파일을 선택해주세요.', 'error');
             e.target.value = '';
             return;
         }
@@ -300,12 +315,15 @@ const AdminPage = () => {
         console.log('홍보방 업로드 시작:', file.name, file.type, file.size);
 
         try {
-            const compressedImage = await compressImage(file);
-            console.log('홍보방 압축 완료, 원본:', file.size, '압축 후:', compressedImage.length);
-            handleRoomChange(index, 'image', compressedImage);
+            // Upload to Supabase Storage
+            const publicUrl = await uploadFile(file, 'rooms');
+            console.log('홍보방 업로드 완료, URL:', publicUrl);
+
+            // Store the URL in the room data
+            handleRoomChange(roomId, 'image', publicUrl);
             showToast('✅ 이미지가 업로드되었습니다! 반드시 "추천 홍보방 저장" 버튼을 눌러 저장하세요.');
         } catch (error) {
-            console.error('홍보방 압축 실패:', error);
+            console.error('홍보방 업로드 실패:', error);
             showToast(`이미지 업로드 실패: ${error.message}`, 'error');
             e.target.value = '';
         }
@@ -738,7 +756,7 @@ const AdminPage = () => {
                                     <input
                                         type="file"
                                         accept="image/*,video/mp4"
-                                        onChange={(e) => handleRoomImageUpload(index, e)}
+                                        onChange={(e) => handleRoomImageUpload(room.id, e)}
                                         style={{ fontSize: '11px' }}
                                         key={`room-upload-${room.id}`}
                                     />
@@ -883,16 +901,34 @@ const AdminPage = () => {
                             accept="image/*,video/mp4"
                             onChange={async (e) => {
                                 const file = e.target.files[0];
-                                if (!file) return;
+                                if (!file) {
+                                    console.log('파일 선택 취소');
+                                    return;
+                                }
+
+                                // File size check (50MB limit - Supabase Storage limit)
+                                if (file.size > 50 * 1024 * 1024) {
+                                    showToast('파일 크기가 너무 큽니다. 50MB 이하의 파일을 선택해주세요.', 'error');
+                                    e.target.value = '';
+                                    return;
+                                }
+
+                                console.log('우측 배너 업로드 시작:', file.name, file.type, file.size);
+
                                 try {
-                                    const compressedImage = await compressImage(file);
+                                    // Upload to Supabase Storage
+                                    const publicUrl = await uploadFile(file, 'right-banners');
+                                    console.log('우측 배너 업로드 완료, URL:', publicUrl);
+
+                                    // Store the URL in the banner data
                                     const newBanners = [...rightBanners];
-                                    newBanners[selectedRightBannerIndex].image = compressedImage;
+                                    newBanners[selectedRightBannerIndex].image = publicUrl;
                                     setRightBanners(newBanners);
-                                    showToast('이미지가 업로드되었습니다! "우측 사이드바 저장" 버튼을 눌러 저장하세요.');
+                                    showToast('✅ 이미지가 업로드되었습니다! 반드시 "우측 사이드바 저장" 버튼을 눌러 저장하세요.');
                                 } catch (error) {
-                                    console.error('우측 배너 압축 실패:', error);
-                                    showToast('이미지 업로드에 실패했습니다.', 'error');
+                                    console.error('우측 배너 업로드 실패:', error);
+                                    showToast(`이미지 업로드 실패: ${error.message}`, 'error');
+                                    e.target.value = '';
                                 }
                             }}
                             style={styles.fileInput}
