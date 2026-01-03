@@ -27,13 +27,6 @@ import {
     deletePost,
     togglePinPost
 } from '../api/posts';
-import {
-    getAllUsers,
-    deleteUser as deleteUserAPI,
-    suspendUser,
-    permanentlyBanUser,
-    liftSuspension
-} from '../api/users';
 
 const AdminPage = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -49,9 +42,6 @@ const AdminPage = () => {
     // Posts State
     const [posts, setPosts] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('all'); // 'all', 'free', 'scammer'
-
-    // Users State
-    const [users, setUsers] = useState([]);
 
     // Selected indices for dropdown editing
     const [selectedBannerIndex, setSelectedBannerIndex] = useState(0);
@@ -84,13 +74,12 @@ const AdminPage = () => {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [bannersData, roomsData, rightBannersData, powerLinksData, postsData, usersData] = await Promise.all([
+            const [bannersData, roomsData, rightBannersData, powerLinksData, postsData] = await Promise.all([
                 getBanners(),
                 getRooms(),
                 getRightBanners(),
                 getPowerLinks(),
-                getAllPosts(),
-                getAllUsers()
+                getAllPosts()
             ]);
 
             setBanners(convertBannersFromDB(bannersData));
@@ -98,7 +87,6 @@ const AdminPage = () => {
             setRightBanners(convertRightBannersFromDB(rightBannersData));
             setPowerLinks(convertPowerLinksFromDB(powerLinksData));
             setPosts(postsData || []);
-            setUsers(usersData || []);
         } catch (error) {
             console.error('데이터 로드 실패:', error);
             showToast('데이터 로드에 실패했습니다.', 'error');
@@ -1467,158 +1455,6 @@ const AdminPage = () => {
                 </div>
             </section>
 
-            <section style={styles.section}>
-                <h2>6. 회원 관리</h2>
-                <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
-                    총 {users.length}명의 회원
-                </p>
-
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                        <thead>
-                            <tr style={{ backgroundColor: '#f9f9f9', borderBottom: '2px solid #ddd' }}>
-                                <th style={{ padding: '10px', textAlign: 'left' }}>이메일</th>
-                                <th style={{ padding: '10px', textAlign: 'left' }}>닉네임</th>
-                                <th style={{ padding: '10px', textAlign: 'center' }}>나이</th>
-                                <th style={{ padding: '10px', textAlign: 'center' }}>가입일</th>
-                                <th style={{ padding: '10px', textAlign: 'center' }}>상태</th>
-                                <th style={{ padding: '10px', textAlign: 'center' }}>관리</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {users.map((user) => {
-                                const now = new Date();
-                                const suspendedUntil = user.suspended_until ? new Date(user.suspended_until) : null;
-                                const isSuspended = suspendedUntil && suspendedUntil > now;
-                                const isPermanentlyBanned = user.is_permanently_banned;
-
-                                return (
-                                    <tr key={user.id} style={{ borderBottom: '1px solid #eee' }}>
-                                        <td style={{ padding: '10px', textAlign: 'left' }}>{user.email}</td>
-                                        <td style={{ padding: '10px', textAlign: 'left' }}>{user.username || '-'}</td>
-                                        <td style={{ padding: '10px', textAlign: 'center' }}>{user.age || '-'}</td>
-                                        <td style={{ padding: '10px', textAlign: 'center' }}>
-                                            {new Date(user.created_at).toLocaleDateString()}
-                                        </td>
-                                        <td style={{ padding: '10px', textAlign: 'center' }}>
-                                            {isPermanentlyBanned ? (
-                                                <span style={{ color: '#c62828', fontWeight: 'bold' }}>영구정지</span>
-                                            ) : isSuspended ? (
-                                                <span style={{ color: '#f57c00', fontWeight: 'bold' }}>
-                                                    정지 ({Math.ceil((suspendedUntil - now) / (1000 * 60 * 60 * 24))}일)
-                                                </span>
-                                            ) : user.is_active ? (
-                                                <span style={{ color: '#2e7d32', fontWeight: 'bold' }}>활성</span>
-                                            ) : (
-                                                <span style={{ color: '#757575' }}>비활성</span>
-                                            )}
-                                        </td>
-                                        <td style={{ padding: '10px', textAlign: 'center' }}>
-                                            <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                                {(isSuspended || isPermanentlyBanned) ? (
-                                                    <button
-                                                        onClick={async () => {
-                                                            try {
-                                                                await liftSuspension(user.id);
-                                                                await fetchAllData();
-                                                                showToast('정지가 해제되었습니다!');
-                                                            } catch (error) {
-                                                                console.error('정지 해제 실패:', error);
-                                                                showToast('정지 해제에 실패했습니다.', 'error');
-                                                            }
-                                                        }}
-                                                        style={{ ...styles.actionBtn, backgroundColor: '#2e7d32', color: '#fff' }}
-                                                        title="정지해제"
-                                                    >
-                                                        해제
-                                                    </button>
-                                                ) : (
-                                                    <>
-                                                        <input
-                                                            type="number"
-                                                            min="1"
-                                                            placeholder="일수"
-                                                            id={`suspend-days-${user.id}`}
-                                                            style={{ width: '60px', padding: '4px', fontSize: '12px', borderRadius: '4px', border: '1px solid #ddd' }}
-                                                        />
-                                                        <button
-                                                            onClick={async () => {
-                                                                const daysInput = document.getElementById(`suspend-days-${user.id}`);
-                                                                const days = parseInt(daysInput.value);
-                                                                if (!days || days < 1) {
-                                                                    showToast('일수를 입력해주세요 (1일 이상)', 'error');
-                                                                    return;
-                                                                }
-                                                                if (window.confirm(`${days}일간 정지하시겠습니까?`)) {
-                                                                    try {
-                                                                        await suspendUser(user.id, days);
-                                                                        await fetchAllData();
-                                                                        showToast(`${days}일간 정지되었습니다!`);
-                                                                        daysInput.value = '';
-                                                                    } catch (error) {
-                                                                        console.error('정지 실패:', error);
-                                                                        showToast('정지에 실패했습니다.', 'error');
-                                                                    }
-                                                                }
-                                                            }}
-                                                            style={{ ...styles.actionBtn, backgroundColor: '#f57c00', color: '#fff' }}
-                                                            title="정지"
-                                                        >
-                                                            정지
-                                                        </button>
-                                                        <button
-                                                            onClick={async () => {
-                                                                if (window.confirm('정말 영구정지 하시겠습니까?')) {
-                                                                    try {
-                                                                        await permanentlyBanUser(user.id);
-                                                                        await fetchAllData();
-                                                                        showToast('영구정지되었습니다!');
-                                                                    } catch (error) {
-                                                                        console.error('영구정지 실패:', error);
-                                                                        showToast('영구정지에 실패했습니다.', 'error');
-                                                                    }
-                                                                }
-                                                            }}
-                                                            style={{ ...styles.actionBtn, backgroundColor: '#c62828', color: '#fff' }}
-                                                            title="영구정지"
-                                                        >
-                                                            영구
-                                                        </button>
-                                                    </>
-                                                )}
-                                                <button
-                                                    onClick={async () => {
-                                                        if (window.confirm('정말 탈퇴 처리하시겠습니까?')) {
-                                                            try {
-                                                                await deleteUserAPI(user.id);
-                                                                await fetchAllData();
-                                                                showToast('회원이 삭제되었습니다!');
-                                                            } catch (error) {
-                                                                console.error('삭제 실패:', error);
-                                                                showToast('삭제에 실패했습니다.', 'error');
-                                                            }
-                                                        }
-                                                    }}
-                                                    style={styles.actionBtn}
-                                                    title="탈퇴"
-                                                >
-                                                    탈퇴
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-
-                    {users.length === 0 && (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
-                            등록된 회원이 없습니다.
-                        </div>
-                    )}
-                </div>
-            </section>
 
         </div>
     );

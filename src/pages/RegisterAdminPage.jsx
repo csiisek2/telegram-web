@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import {
+    deleteUser as deleteUserAPI,
+    suspendUser,
+    permanentlyBanUser,
+    liftSuspension
+} from '../api/users';
 
 const RegisterAdminPage = () => {
     const [users, setUsers] = useState([]);
@@ -22,8 +28,7 @@ const RegisterAdminPage = () => {
             const { data, error } = await supabase
                 .from('users')
                 .select('*')
-                .order('created_at', { ascending: false })
-                .limit(20);
+                .order('created_at', { ascending: false });
 
             if (error) throw error;
             setUsers(data || []);
@@ -105,8 +110,8 @@ const RegisterAdminPage = () => {
             )}
 
             <div style={styles.header}>
-                <h1 style={styles.title}>회원 등록 관리</h1>
-                <p style={styles.subtitle}>안전한 회원 등록을 위한 별도 관리 페이지</p>
+                <h1 style={styles.title}>회원 관리</h1>
+                <p style={styles.subtitle}>회원 등록 및 관리를 위한 전용 페이지</p>
             </div>
 
             {/* Registration Form */}
@@ -160,9 +165,9 @@ const RegisterAdminPage = () => {
                 </form>
             </section>
 
-            {/* Recent Registrations */}
+            {/* User Management */}
             <section style={styles.section}>
-                <h2 style={styles.sectionTitle}>최근 등록 회원 (20명)</h2>
+                <h2 style={styles.sectionTitle}>전체 회원 목록 ({users.length}명)</h2>
                 {loading ? (
                     <div style={styles.loading}>로딩 중...</div>
                 ) : (
@@ -175,6 +180,7 @@ const RegisterAdminPage = () => {
                                     <th style={styles.th}>나이</th>
                                     <th style={styles.th}>가입일</th>
                                     <th style={styles.th}>상태</th>
+                                    <th style={styles.th}>관리</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -205,6 +211,75 @@ const RegisterAdminPage = () => {
                                                     <span style={{ color: '#757575' }}>비활성</span>
                                                 )}
                                             </td>
+                                            <td style={styles.td}>
+                                                <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                                    {(isSuspended || isPermanentlyBanned) ? (
+                                                        <button
+                                                            onClick={async () => {
+                                                                if (window.confirm('정지를 해제하시겠습니까?')) {
+                                                                    await liftSuspension(user.id);
+                                                                    await fetchRecentUsers();
+                                                                    showToast('정지가 해제되었습니다!');
+                                                                }
+                                                            }}
+                                                            style={styles.actionBtn}
+                                                        >
+                                                            해제
+                                                        </button>
+                                                    ) : (
+                                                        <>
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                placeholder="일수"
+                                                                id={`suspend-days-${user.id}`}
+                                                                style={styles.daysInput}
+                                                            />
+                                                            <button
+                                                                onClick={async () => {
+                                                                    const days = parseInt(document.getElementById(`suspend-days-${user.id}`).value);
+                                                                    if (!days || days < 1) {
+                                                                        showToast('일수를 입력해주세요 (1일 이상)', 'error');
+                                                                        return;
+                                                                    }
+                                                                    if (window.confirm(`${days}일간 정지하시겠습니까?`)) {
+                                                                        await suspendUser(user.id, days);
+                                                                        await fetchRecentUsers();
+                                                                        showToast(`${days}일간 정지되었습니다!`);
+                                                                    }
+                                                                }}
+                                                                style={styles.actionBtn}
+                                                            >
+                                                                정지
+                                                            </button>
+                                                            <button
+                                                                onClick={async () => {
+                                                                    if (window.confirm('정말 영구정지 하시겠습니까?')) {
+                                                                        await permanentlyBanUser(user.id);
+                                                                        await fetchRecentUsers();
+                                                                        showToast('영구정지되었습니다!');
+                                                                    }
+                                                                }}
+                                                                style={styles.actionBtn}
+                                                            >
+                                                                영구
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (window.confirm('정말 탈퇴 처리하시겠습니까?')) {
+                                                                await deleteUserAPI(user.id);
+                                                                await fetchRecentUsers();
+                                                                showToast('회원이 삭제되었습니다!');
+                                                            }
+                                                        }}
+                                                        style={{...styles.actionBtn, backgroundColor: '#f44336'}}
+                                                    >
+                                                        탈퇴
+                                                    </button>
+                                                </div>
+                                            </td>
                                         </tr>
                                     );
                                 })}
@@ -223,10 +298,10 @@ const RegisterAdminPage = () => {
             <section style={styles.infoBox}>
                 <h3 style={styles.infoTitle}>🔒 보안 안내</h3>
                 <ul style={styles.infoList}>
-                    <li>이 페이지는 관리자 전용 회원 등록 페이지입니다</li>
-                    <li>일반 사용자 회원가입은 메인 사이트에서 진행됩니다</li>
-                    <li>회원 관리는 /isc8806 페이지에서 진행하세요</li>
-                    <li>페이지 주소를 외부에 공개하지 마세요</li>
+                    <li>이 페이지는 관리자 전용 회원 관리 페이지입니다</li>
+                    <li>회원 등록, 정지, 영구정지, 탈퇴 등 모든 회원 관리 기능을 제공합니다</li>
+                    <li>일반 사이트 관리는 /isc8806 페이지에서 진행하세요</li>
+                    <li>페이지 주소를 외부에 절대 공개하지 마세요</li>
                 </ul>
             </section>
         </div>
@@ -374,6 +449,25 @@ const styles = {
         zIndex: 10000,
         boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
         animation: 'slideIn 0.3s ease-out',
+    },
+    actionBtn: {
+        padding: '6px 12px',
+        backgroundColor: '#0088cc',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '6px',
+        fontSize: '13px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s',
+    },
+    daysInput: {
+        width: '60px',
+        padding: '4px',
+        fontSize: '12px',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        textAlign: 'center',
     },
 };
 
