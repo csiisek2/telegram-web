@@ -49,8 +49,9 @@ const styles = {
         gap: '12px',
     },
     bannerItem: {
-        height: '240px',
-        backgroundColor: '#f5f5f5', // Neutral gray
+        width: '100%',
+        aspectRatio: '4 / 5', // 세로형 배너 (인스타 스타일)
+        backgroundColor: '#f5f5f5',
         border: '1px solid #ddd',
         borderRadius: '8px',
         display: 'flex',
@@ -59,6 +60,7 @@ const styles = {
         cursor: 'pointer',
         color: '#888',
         transition: 'background-color 0.2s',
+        overflow: 'hidden',
     },
     bannerContent: {
         textAlign: 'center',
@@ -75,7 +77,8 @@ const styles = {
     bannerImage: {
         width: '100%',
         height: '100%',
-        objectFit: 'cover',
+        objectFit: 'contain', // 전체 이미지 표시
+        backgroundColor: '#f5f5f5',
     }
 };
 

@@ -218,15 +218,18 @@ const styles = {
         }
     },
     imagePlaceholder: {
-        height: '140px',
+        width: '100%',
+        aspectRatio: '1 / 1', // 정사각형 (인스타그램 스타일)
+        backgroundColor: '#f5f5f5',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        overflow: 'hidden',
     },
     image: {
         width: '100%',
         height: '100%',
-        objectFit: 'cover',
+        objectFit: 'contain', // 전체 이미지가 보이도록
     },
     content: {
         padding: '12px',
