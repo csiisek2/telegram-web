@@ -689,7 +689,7 @@ const AdminPage = () => {
 
                         <div style={styles.preview}>
                             {banners[selectedBannerIndex].image ? (
-                                banners[selectedBannerIndex].image.startsWith('data:video') ?
+                                (banners[selectedBannerIndex].image.startsWith('data:video') || banners[selectedBannerIndex].image.toLowerCase().match(/\.(mp4|webm|mov)$/)) ?
                                     <video src={banners[selectedBannerIndex].image} autoPlay loop muted playsInline style={{ maxWidth: '100%', maxHeight: '150px' }} /> :
                                     <img src={banners[selectedBannerIndex].image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '150px' }} />
                             ) : <div style={{ color: '#aaa', padding: '20px', textAlign: 'center' }}>이미지 없음</div>}
@@ -723,7 +723,7 @@ const AdminPage = () => {
                                 </div>
                                 <div style={styles.previewSmall}>
                                     {room.image ? (
-                                        room.image.startsWith('data:video') ?
+                                        (room.image.startsWith('data:video') || room.image.toLowerCase().match(/\.(mp4|webm|mov)$/)) ?
                                             <video src={room.image} autoPlay loop muted playsInline style={{ width: '50px', height: '50px', objectFit: 'cover' }} /> :
                                             <img src={room.image} alt="Preview" style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
                                     ) : <div style={{ width: '50px', height: '50px', background: '#eee' }}></div>}
@@ -937,7 +937,7 @@ const AdminPage = () => {
 
                         <div style={styles.preview}>
                             {rightBanners[selectedRightBannerIndex].image ? (
-                                rightBanners[selectedRightBannerIndex].image.startsWith('data:video') ?
+                                (rightBanners[selectedRightBannerIndex].image.startsWith('data:video') || rightBanners[selectedRightBannerIndex].image.toLowerCase().match(/\.(mp4|webm|mov)$/)) ?
                                     <video src={rightBanners[selectedRightBannerIndex].image} autoPlay loop muted playsInline style={{ maxWidth: '100%', maxHeight: '150px' }} /> :
                                     <img src={rightBanners[selectedRightBannerIndex].image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '150px' }} />
                             ) : <div style={{ color: '#aaa', padding: '20px', textAlign: 'center' }}>이미지 없음</div>}

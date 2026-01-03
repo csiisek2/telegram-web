@@ -119,7 +119,7 @@ const RoomGrid = () => {
                             {room.isPinned && <span style={styles.badge}>추천업체</span>}
                             {room.image ? (
                                 <div style={styles.imagePlaceholder}>
-                                    {room.image.startsWith('data:video') ? (
+                                    {(room.image.startsWith('data:video') || room.image.toLowerCase().match(/\.(mp4|webm|mov)$/)) ? (
                                         <video src={room.image} autoPlay loop muted playsInline style={styles.image} />
                                     ) : (
                                         <img src={room.image} alt={room.name} style={styles.image} loading="lazy" />

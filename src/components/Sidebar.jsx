@@ -30,7 +30,7 @@ const Sidebar = () => {
                     onClick={() => banner.link ? window.open(banner.link, '_blank') : null}
                 >
                     {banner.image ? (
-                        banner.image.startsWith('data:video') ? (
+                        (banner.image.startsWith('data:video') || banner.image.toLowerCase().match(/\.(mp4|webm|mov)$/)) ? (
                             <video
                                 src={banner.image}
                                 autoPlay
