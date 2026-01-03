@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useSiteData } from '../context/SiteDataContext';
 import { powerLinkChannels } from '../data/powerLinkData';
 
 const AdTextSection = () => {
+    const { data, loading } = useSiteData();
     const [searchParams] = useSearchParams();
     const searchTerm = searchParams.get('search') || '';
 
+    // DB에서 가져온 파워링크가 있으면 사용, 없으면 정적 데이터 fallback
+    // DB 파워링크는 이미 id 내림차순으로 정렬됨 (새 글이 맨 위)
+    // DB 파워링크를 맨 위에, 기존 정적 데이터를 아래에 합침
+    const powerLinks = [...data.powerLinks, ...powerLinkChannels];
+
     // 검색 필터 로직
     const filteredChannels = searchTerm
-        ? powerLinkChannels.filter(channel =>
+        ? powerLinks.filter(channel =>
             channel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (channel.category && channel.category.toLowerCase().includes(searchTerm.toLowerCase()))
         )
-        : powerLinkChannels;
+        : powerLinks;
 
     // Pagination Logic
     const ITEMS_PER_PAGE = 20;
@@ -59,7 +66,11 @@ const AdTextSection = () => {
                     </span>
                 )}
             </div>
-            {filteredChannels.length === 0 ? (
+            {loading ? (
+                <div style={styles.noResults}>
+                    <p>로딩 중...</p>
+                </div>
+            ) : filteredChannels.length === 0 ? (
                 <div style={styles.noResults}>
                     <p>검색 결과가 없습니다.</p>
                     <p style={{ fontSize: '14px', color: '#888' }}>다른 검색어를 시도해보세요.</p>
