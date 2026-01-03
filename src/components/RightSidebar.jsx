@@ -1,20 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { getRightBanners, convertRightBannersFromDB } from '../api/siteConfig';
+import React from 'react';
+import { useSiteData } from '../context/SiteDataContext';
 
 const RightSidebar = () => {
-    const [banners, setBanners] = useState([]);
-
-    useEffect(() => {
-        const fetchBanners = async () => {
-            try {
-                const bannersData = await getRightBanners();
-                setBanners(convertRightBannersFromDB(bannersData));
-            } catch (error) {
-                console.error('우측 배너 로드 실패:', error);
-            }
-        };
-        fetchBanners();
-    }, []);
+    const { data } = useSiteData();
+    const banners = data.rightBanners;
 
     return (
         <aside style={styles.sidebar}>

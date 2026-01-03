@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './context/AuthContext';
+import { SiteDataProvider } from './context/SiteDataContext';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import RightSidebar from './components/RightSidebar';
@@ -17,7 +18,8 @@ function App() {
   return (
     <HelmetProvider>
       <AuthProvider>
-        <Router>
+        <SiteDataProvider>
+          <Router>
           <div className="app">
             <SEO />
             <Header />
@@ -53,6 +55,7 @@ function App() {
             <Footer />
           </div>
         </Router>
+        </SiteDataProvider>
       </AuthProvider>
     </HelmetProvider>
   );

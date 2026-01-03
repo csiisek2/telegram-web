@@ -1,30 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getRooms, convertRoomsFromDB } from '../api/siteConfig';
+import { useSiteData } from '../context/SiteDataContext';
 
 const RoomGrid = () => {
     const [searchParams] = useSearchParams();
     const searchTerm = searchParams.get('search') || '';
     const ITEMS_PER_PAGE = 21;
 
-    // 1. [사용자 + 관리자 설정] Supabase에서 데이터 가져오기
-    const [manualItems, setManualItems] = useState([]);
-    const [loading, setLoading] = useState(true);
+    // Context에서 데이터 가져오기
+    const { data, loading } = useSiteData();
+    const manualItems = data.rooms;
     const [shuffleTrigger, setShuffleTrigger] = useState(0);
-
-    useEffect(() => {
-        const fetchRooms = async () => {
-            try {
-                const roomsData = await getRooms();
-                setManualItems(convertRoomsFromDB(roomsData));
-            } catch (error) {
-                console.error('추천방 로드 실패:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchRooms();
-    }, []);
 
     // 5분마다 랜덤 셔플 트리거
     useEffect(() => {

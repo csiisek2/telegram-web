@@ -1,27 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { getPowerLinks, convertPowerLinksFromDB } from '../api/siteConfig';
+import React from 'react';
+import { useSiteData } from '../context/SiteDataContext';
 
 const Footer = () => {
-    const [powerLinks, setPowerLinks] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const loadPowerLinks = async () => {
-            try {
-                const data = await getPowerLinks();
-                // Sort by id descending to show newest first
-                const converted = convertPowerLinksFromDB(data);
-                const sorted = converted.sort((a, b) => b.id - a.id);
-                setPowerLinks(sorted);
-            } catch (error) {
-                console.error('파워링크 로드 실패:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadPowerLinks();
-    }, []);
+    const { data, loading } = useSiteData();
+    const powerLinks = data.powerLinks;
 
     return (
         <footer style={styles.footer}>
