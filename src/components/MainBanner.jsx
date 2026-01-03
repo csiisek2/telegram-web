@@ -30,6 +30,8 @@ const styles = {
         alignItems: 'center',
         position: 'relative',
         overflow: 'hidden',
+        border: '2px solid #0088cc',
+        boxShadow: '0 2px 4px rgba(0, 136, 204, 0.2)',
     },
     content: {
         zIndex: 1,

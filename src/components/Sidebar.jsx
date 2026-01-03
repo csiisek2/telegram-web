@@ -86,6 +86,8 @@ const styles = {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
+        border: '2px solid #0088cc',
+        boxShadow: '0 2px 4px rgba(0, 136, 204, 0.1)',
     },
     bannerImage: {
         width: '100%',
@@ -105,9 +107,10 @@ const styles = {
     categoryBox: {
         backgroundColor: '#fff',
         borderRadius: '12px',
-        border: '1px solid var(--tg-border)',
+        border: '2px solid #0088cc',
         padding: '16px',
         marginTop: '8px',
+        boxShadow: '0 2px 4px rgba(0, 136, 204, 0.1)',
     },
     catTitle: {
         fontSize: '16px',
