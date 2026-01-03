@@ -1,3 +1,4 @@
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './context/AuthContext';
@@ -9,10 +10,12 @@ import Footer from './components/Footer';
 import SEO from './components/SEO';
 import AuthModal from './components/AuthModal';
 import Home from './pages/Home';
-import FreeBoardPage from './pages/FreeBoardPage';
-import ScammerBoardPage from './pages/ScammerBoardPage';
-import WritePage from './pages/WritePage';
-import AdminPage from './pages/AdminPage';
+
+// Lazy load heavy pages
+const FreeBoardPage = lazy(() => import('./pages/FreeBoardPage'));
+const ScammerBoardPage = lazy(() => import('./pages/ScammerBoardPage'));
+const WritePage = lazy(() => import('./pages/WritePage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
 
 function App() {
   return (
@@ -35,14 +38,16 @@ function App() {
 
               {/* Center Main Content */}
               <main style={styles.contentArea}>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/free" element={<FreeBoardPage />} />
-                  <Route path="/free/write" element={<WritePage category="free" />} />
-                  <Route path="/scammer" element={<ScammerBoardPage />} />
-                  <Route path="/scammer/write" element={<WritePage category="scammer" />} />
-                  <Route path="/isc8806" element={<AdminPage />} />
-                </Routes>
+                <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>로딩 중...</div>}>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/free" element={<FreeBoardPage />} />
+                    <Route path="/free/write" element={<WritePage category="free" />} />
+                    <Route path="/scammer" element={<ScammerBoardPage />} />
+                    <Route path="/scammer/write" element={<WritePage category="scammer" />} />
+                    <Route path="/isc8806" element={<AdminPage />} />
+                  </Routes>
+                </Suspense>
               </main>
 
               {/* Right Sidebar (Ads) */}

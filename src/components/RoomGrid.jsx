@@ -291,4 +291,4 @@ const styles = {
     }
 };
 
-export default RoomGrid;
+export default React.memo(RoomGrid);

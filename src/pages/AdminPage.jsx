@@ -132,8 +132,8 @@ const AdminPage = () => {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
 
-                        // Resize to max 400px width while maintaining aspect ratio
-                        const maxWidth = 400;
+                        // Resize to max 300px width while maintaining aspect ratio
+                        const maxWidth = 300;
                         const scaleFactor = maxWidth / img.width;
                         const width = img.width > maxWidth ? maxWidth : img.width;
                         const height = img.width > maxWidth ? img.height * scaleFactor : img.height;
@@ -142,8 +142,8 @@ const AdminPage = () => {
                         canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        // Compress to 70% quality
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        // Compress to 50% quality for faster loading
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
                         resolve(compressedDataUrl);
                     } catch (error) {
                         reject(new Error('이미지 압축 실패: ' + error.message));
