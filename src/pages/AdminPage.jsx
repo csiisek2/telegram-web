@@ -12,6 +12,7 @@ import {
     addRoom as addRoomAPI,
     addRightBanner as addRightBannerAPI,
     addPowerLink as addPowerLinkAPI,
+    addBanner as addBannerAPI,
     deleteRoom as deleteRoomAPI,
     deleteBanner,
     deleteRightBanner,
@@ -46,6 +47,11 @@ const AdminPage = () => {
     const [selectedBannerIndex, setSelectedBannerIndex] = useState(0);
     const [selectedRoomIndex, setSelectedRoomIndex] = useState(0);
     const [selectedRightBannerIndex, setSelectedRightBannerIndex] = useState(0);
+
+    // Room Pagination
+    const [roomPage, setRoomPage] = useState(1);
+    const [roomSearch, setRoomSearch] = useState('');
+    const ROOMS_PER_PAGE = 21;
 
     // Modal State
     const [modal, setModal] = useState({
@@ -386,6 +392,29 @@ const AdminPage = () => {
         }
     };
 
+    const addLeftBanner = async () => {
+        setLoading(true);
+        try {
+            const newBannerData = {
+                title: '새 배너',
+                text: '설명 입력',
+                image: '',
+                link: '#',
+                display_order: banners.length
+            };
+            await addBannerAPI(newBannerData);
+            await fetchAllData();
+            showToast('새 왼쪽 배너가 추가되었습니다!');
+            // 새로 추가된 배너로 선택 인덱스 변경
+            setSelectedBannerIndex(banners.length);
+        } catch (error) {
+            console.error('추가 실패:', error);
+            showToast('추가에 실패했습니다.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const togglePin = (roomId) => {
         const newRooms = [...rooms];
         const room = newRooms.find(r => r.id === roomId);
@@ -623,7 +652,8 @@ const AdminPage = () => {
             )}
 
             <section style={styles.section}>
-                <h2>1. 메인 배너 설정</h2>
+                <h2>1. 왼쪽 배너 관리</h2>
+                <button onClick={addLeftBanner} style={styles.addBtn}>+ 새 배너 추가</button>
 
                 <div style={{ marginBottom: '20px' }}>
                     <label style={styles.label}>배너 선택:</label>
@@ -634,7 +664,7 @@ const AdminPage = () => {
                     >
                         {banners.map((banner, index) => (
                             <option key={banner.id} value={index}>
-                                배너 #{index + 1} {index === 0 ? '(왼쪽 상단)' : `(왼쪽 사이드바 ${index}번)`}
+                                배너 #{index + 1} - {banner.title || '제목 없음'}
                             </option>
                         ))}
                     </select>
@@ -722,13 +752,36 @@ const AdminPage = () => {
                             key={`banner-${banners[selectedBannerIndex].id}`}
                         />
 
-                        <div style={styles.preview}>
+                        <div style={{ ...styles.preview, height: 'auto', minHeight: '100px' }}>
                             {banners[selectedBannerIndex].image ? (
                                 (banners[selectedBannerIndex].image.startsWith('data:video') || banners[selectedBannerIndex].image.toLowerCase().match(/\.(mp4|webm|mov)$/)) ?
-                                    <video src={banners[selectedBannerIndex].image} autoPlay loop muted playsInline style={{ maxWidth: '100%', maxHeight: '150px' }} /> :
-                                    <img src={banners[selectedBannerIndex].image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '150px' }} />
+                                    <video src={banners[selectedBannerIndex].image} autoPlay loop muted playsInline style={{ width: '100%', height: 'auto' }} /> :
+                                    <img src={banners[selectedBannerIndex].image} alt="Preview" style={{ width: '100%', height: 'auto' }} />
                             ) : <div style={{ color: '#aaa', padding: '20px', textAlign: 'center' }}>이미지 없음</div>}
                         </div>
+
+                        {banners[selectedBannerIndex].image && (
+                            <button
+                                onClick={() => {
+                                    if (window.confirm('이미지를 삭제하시겠습니까? (배너 저장 후 적용됩니다)')) {
+                                        handleBannerChange(selectedBannerIndex, 'image', '');
+                                        showToast('이미지가 삭제되었습니다. "배너 설정 저장" 버튼을 눌러주세요.');
+                                    }
+                                }}
+                                style={{
+                                    marginTop: '10px',
+                                    padding: '8px 16px',
+                                    backgroundColor: '#e74c3c',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontSize: '13px'
+                                }}
+                            >
+                                🖼️ 이미지 삭제
+                            </button>
+                        )}
                     </div>
                 )}
 
@@ -737,7 +790,39 @@ const AdminPage = () => {
 
             <section style={styles.section}>
                 <h2>2. 추천 홍보방 관리 (가운데 그리드)</h2>
-                <button onClick={addRoom} style={styles.addBtn}>+ 새 홍보방 추가</button>
+
+                {/* 검색창 - 별도 행 */}
+                <div style={{ marginBottom: '15px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <input
+                            type="text"
+                            placeholder="홍보방 검색 (이름, 설명, 링크)"
+                            value={roomSearch}
+                            onChange={(e) => {
+                                setRoomSearch(e.target.value);
+                                setRoomPage(1);
+                            }}
+                            style={{ ...styles.input, width: '300px', padding: '8px 12px', fontSize: '14px' }}
+                        />
+                        {roomSearch && (
+                            <button
+                                onClick={() => { setRoomSearch(''); setRoomPage(1); }}
+                                style={{ padding: '8px 16px', fontSize: '13px', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ddd', whiteSpace: 'nowrap' }}
+                            >
+                                ✕ 초기화
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* 버튼 및 정보 */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                    <button onClick={addRoom} style={styles.addBtn}>+ 새 홍보방 추가</button>
+                    <span style={{ fontSize: '13px', color: '#666' }}>
+                        {roomSearch ? `검색결과: ${rooms.filter(r => r.name.toLowerCase().includes(roomSearch.toLowerCase()) || r.desc?.toLowerCase().includes(roomSearch.toLowerCase()) || r.link?.toLowerCase().includes(roomSearch.toLowerCase())).length}개` : `총 ${rooms.length}개`} (페이지 {roomPage}/{Math.ceil((roomSearch ? rooms.filter(r => r.name.toLowerCase().includes(roomSearch.toLowerCase()) || r.desc?.toLowerCase().includes(roomSearch.toLowerCase()) || r.link?.toLowerCase().includes(roomSearch.toLowerCase())).length : rooms.length) / ROOMS_PER_PAGE) || 1})
+                    </span>
+                </div>
+
                 <div style={styles.list}>
                     {rooms
                         .slice()
@@ -749,80 +834,141 @@ const AdminPage = () => {
                             }
                             return 0;
                         })
-                        .map((room, index) => (
-                            <div key={room.id} style={styles.listItem}>
-                                <div style={styles.moveBtnsColumn}>
-                                    <button onClick={() => handleMove('recommendedRooms', index, 'up')} disabled={index === 0} style={styles.moveBtnSmall}>▲</button>
-                                    <button onClick={() => handleMove('recommendedRooms', index, 'down')} disabled={index === rooms.length - 1} style={styles.moveBtnSmall}>▼</button>
-                                    <button type="button" onClick={() => openJumpModal('recommendedRooms', index)} style={{ ...styles.moveBtnSmall, marginTop: '4px', backgroundColor: '#ecf0f1', color: '#333' }} title="순서 직접 입력">🔢</button>
-                                </div>
-                                <div style={styles.previewSmall}>
-                                    {room.image ? (
-                                        (room.image.startsWith('data:video') || room.image.toLowerCase().match(/\.(mp4|webm|mov)$/)) ?
-                                            <video src={room.image} autoPlay loop muted playsInline style={{ width: '50px', height: '50px', objectFit: 'cover' }} /> :
-                                            <img src={room.image} alt="Preview" style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
-                                    ) : <div style={{ width: '50px', height: '50px', background: '#eee' }}></div>}
-                                </div>
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        {room.isPinned && (
-                                            <span style={{
-                                                backgroundColor: '#f39c12',
-                                                color: '#fff',
-                                                padding: '2px 6px',
-                                                borderRadius: '8px',
-                                                fontSize: '9px',
-                                                fontWeight: 'bold',
-                                                whiteSpace: 'nowrap',
-                                                flexShrink: 0
-                                            }}>
-                                                추천
-                                            </span>
-                                        )}
-                                        <input type="text" value={room.name} onChange={(e) => handleRoomChange(room.id, 'name', e.target.value)} placeholder="방 이름" style={{ ...styles.inputSmall, flex: 1 }} />
+                        .filter(room => {
+                            if (!roomSearch) return true;
+                            const search = roomSearch.toLowerCase();
+                            return room.name.toLowerCase().includes(search) ||
+                                room.desc?.toLowerCase().includes(search) ||
+                                room.link?.toLowerCase().includes(search);
+                        })
+                        .slice((roomPage - 1) * ROOMS_PER_PAGE, roomPage * ROOMS_PER_PAGE)
+                        .map((room, pageIndex) => {
+                            const filteredRooms = rooms.filter(r => {
+                                if (!roomSearch) return true;
+                                const search = roomSearch.toLowerCase();
+                                return r.name.toLowerCase().includes(search) || r.desc?.toLowerCase().includes(search) || r.link?.toLowerCase().includes(search);
+                            });
+                            const index = rooms.findIndex(r => r.id === room.id);
+                            return (
+                                <div key={room.id} style={styles.listItem}>
+                                    <div style={{ fontSize: '11px', color: '#888', marginRight: '8px', minWidth: '25px' }}>#{index + 1}</div>
+                                    <div style={styles.moveBtnsColumn}>
+                                        <button onClick={() => handleMove('recommendedRooms', index, 'up')} disabled={index === 0} style={styles.moveBtnSmall}>▲</button>
+                                        <button onClick={() => handleMove('recommendedRooms', index, 'down')} disabled={index === rooms.length - 1} style={styles.moveBtnSmall}>▼</button>
+                                        <button type="button" onClick={() => openJumpModal('recommendedRooms', index)} style={{ ...styles.moveBtnSmall, marginTop: '4px', backgroundColor: '#ecf0f1', color: '#333' }} title="순서 직접 입력">🔢</button>
                                     </div>
-                                    <input type="text" value={room.desc} onChange={(e) => handleRoomChange(room.id, 'desc', e.target.value)} placeholder="설명" style={styles.inputSmall} />
+                                    <div style={styles.previewSmall}>
+                                        {room.image ? (
+                                            (room.image.startsWith('data:video') || room.image.toLowerCase().match(/\.(mp4|webm|mov)$/)) ?
+                                                <video src={room.image} autoPlay loop muted playsInline style={{ width: '50px', height: '50px', objectFit: 'cover' }} /> :
+                                                <img src={room.image} alt="Preview" style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+                                        ) : <div style={{ width: '50px', height: '50px', background: '#eee' }}></div>}
+                                    </div>
+                                    <div style={{ flex: 4, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            {room.isPinned && (
+                                                <span style={{
+                                                    backgroundColor: '#f39c12',
+                                                    color: '#fff',
+                                                    padding: '2px 6px',
+                                                    borderRadius: '8px',
+                                                    fontSize: '9px',
+                                                    fontWeight: 'bold',
+                                                    whiteSpace: 'nowrap',
+                                                    flexShrink: 0
+                                                }}>
+                                                    추천
+                                                </span>
+                                            )}
+                                            <input type="text" value={room.name} onChange={(e) => handleRoomChange(room.id, 'name', e.target.value)} placeholder="방 이름" style={{ ...styles.inputSmall, flex: 1 }} />
+                                        </div>
+                                        <input type="text" value={room.desc} onChange={(e) => handleRoomChange(room.id, 'desc', e.target.value)} placeholder="설명" style={styles.inputSmall} />
+                                    </div>
+                                    <div style={{ flex: 4, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <input type="number" value={room.members} onChange={(e) => handleRoomChange(room.id, 'members', Number(e.target.value))} placeholder="인원수" style={styles.inputSmall} />
+                                        <input type="text" value={room.link} onChange={(e) => handleRoomChange(room.id, 'link', e.target.value)} placeholder="링크" style={styles.inputSmall} />
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <input
+                                            type="file"
+                                            accept="image/*,video/mp4"
+                                            onChange={(e) => handleRoomImageUpload(room.id, e)}
+                                            style={{ fontSize: '11px' }}
+                                            key={`room-upload-${room.id}`}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'center' }}>
+                                        <input
+                                            type="number"
+                                            value={room.pinnedPosition || ''}
+                                            onChange={(e) => handleRoomChange(room.id, 'pinnedPosition', e.target.value ? Number(e.target.value) : null)}
+                                            placeholder="고정 순서"
+                                            min="1"
+                                            style={{ ...styles.inputSmall, width: '70px', textAlign: 'center' }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => togglePin(room.id)}
+                                            style={{
+                                                ...styles.pinBtn,
+                                                backgroundColor: room.isPinned ? '#f39c12' : '#95a5a6',
+                                                fontSize: '11px',
+                                                padding: '4px 8px'
+                                            }}
+                                            title={room.isPinned ? '고정 해제' : '상단에 고정'}
+                                        >
+                                            {room.isPinned ? '고정됨' : '고정하기'}
+                                        </button>
+                                    </div>
+                                    <button type="button" onClick={() => openDeleteModal(index)} style={styles.deleteBtn}>삭제</button>
                                 </div>
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <input type="number" value={room.members} onChange={(e) => handleRoomChange(room.id, 'members', Number(e.target.value))} placeholder="인원수" style={styles.inputSmall} />
-                                    <input type="text" value={room.link} onChange={(e) => handleRoomChange(room.id, 'link', e.target.value)} placeholder="링크" style={styles.inputSmall} />
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <input
-                                        type="file"
-                                        accept="image/*,video/mp4"
-                                        onChange={(e) => handleRoomImageUpload(room.id, e)}
-                                        style={{ fontSize: '11px' }}
-                                        key={`room-upload-${room.id}`}
-                                    />
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'center' }}>
-                                    <input
-                                        type="number"
-                                        value={room.pinnedPosition || ''}
-                                        onChange={(e) => handleRoomChange(room.id, 'pinnedPosition', e.target.value ? Number(e.target.value) : null)}
-                                        placeholder="고정 순서"
-                                        min="1"
-                                        style={{ ...styles.inputSmall, width: '70px', textAlign: 'center' }}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => togglePin(room.id)}
-                                        style={{
-                                            ...styles.pinBtn,
-                                            backgroundColor: room.isPinned ? '#f39c12' : '#95a5a6',
-                                            fontSize: '11px',
-                                            padding: '4px 8px'
-                                        }}
-                                        title={room.isPinned ? '고정 해제' : '상단에 고정'}
-                                    >
-                                        {room.isPinned ? '고정됨' : '고정하기'}
-                                    </button>
-                                </div>
-                                <button type="button" onClick={() => openDeleteModal(index)} style={styles.deleteBtn}>삭제</button>
-                            </div>
-                        ))}
+                            )
+                        })}
                 </div>
+
+                {/* Room Pagination */}
+                {(() => {
+                    const filteredCount = roomSearch
+                        ? rooms.filter(r => r.name.toLowerCase().includes(roomSearch.toLowerCase()) || r.desc?.toLowerCase().includes(roomSearch.toLowerCase()) || r.link?.toLowerCase().includes(roomSearch.toLowerCase())).length
+                        : rooms.length;
+                    const totalPages = Math.ceil(filteredCount / ROOMS_PER_PAGE);
+
+                    if (filteredCount <= ROOMS_PER_PAGE) return null;
+
+                    return (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', margin: '15px 0' }}>
+                            <button
+                                onClick={() => setRoomPage(p => Math.max(1, p - 1))}
+                                disabled={roomPage === 1}
+                                style={{ ...styles.moveBtn, padding: '6px 12px' }}
+                            >
+                                ◀ 이전
+                            </button>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    onClick={() => setRoomPage(page)}
+                                    style={{
+                                        ...styles.moveBtn,
+                                        padding: '6px 12px',
+                                        backgroundColor: roomPage === page ? 'var(--tg-primary)' : '#fff',
+                                        color: roomPage === page ? '#fff' : '#333'
+                                    }}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                            <button
+                                onClick={() => setRoomPage(p => Math.min(totalPages, p + 1))}
+                                disabled={roomPage === totalPages}
+                                style={{ ...styles.moveBtn, padding: '6px 12px' }}
+                            >
+                                다음 ▶
+                            </button>
+                        </div>
+                    );
+                })()}
+
                 <button onClick={handleRoomSave} style={styles.saveBtn}>추천 홍보방 저장</button>
             </section>
 
@@ -970,13 +1116,38 @@ const AdminPage = () => {
                             key={`right-${rightBanners[selectedRightBannerIndex].id}`}
                         />
 
-                        <div style={styles.preview}>
+                        <div style={{ ...styles.preview, height: 'auto', minHeight: '100px' }}>
                             {rightBanners[selectedRightBannerIndex].image ? (
                                 (rightBanners[selectedRightBannerIndex].image.startsWith('data:video') || rightBanners[selectedRightBannerIndex].image.toLowerCase().match(/\.(mp4|webm|mov)$/)) ?
-                                    <video src={rightBanners[selectedRightBannerIndex].image} autoPlay loop muted playsInline style={{ maxWidth: '100%', maxHeight: '150px' }} /> :
-                                    <img src={rightBanners[selectedRightBannerIndex].image} alt="Preview" style={{ maxWidth: '100%', maxHeight: '150px' }} />
+                                    <video src={rightBanners[selectedRightBannerIndex].image} autoPlay loop muted playsInline style={{ width: '100%', height: 'auto' }} /> :
+                                    <img src={rightBanners[selectedRightBannerIndex].image} alt="Preview" style={{ width: '100%', height: 'auto' }} />
                             ) : <div style={{ color: '#aaa', padding: '20px', textAlign: 'center' }}>이미지 없음</div>}
                         </div>
+
+                        {rightBanners[selectedRightBannerIndex].image && (
+                            <button
+                                onClick={() => {
+                                    if (window.confirm('이미지를 삭제하시겠습니까? (저장 후 적용됩니다)')) {
+                                        const newBanners = [...rightBanners];
+                                        newBanners[selectedRightBannerIndex].image = '';
+                                        setRightBanners(newBanners);
+                                        showToast('이미지가 삭제되었습니다. "우측 사이드바 저장" 버튼을 눌러주세요.');
+                                    }
+                                }}
+                                style={{
+                                    marginTop: '10px',
+                                    padding: '8px 16px',
+                                    backgroundColor: '#e74c3c',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontSize: '13px'
+                                }}
+                            >
+                                🖼️ 이미지 삭제
+                            </button>
+                        )}
                     </div>
                 )}
 
@@ -1308,11 +1479,11 @@ const styles = {
     saveBtn: { backgroundColor: 'var(--tg-primary)', color: '#fff', padding: '12px 24px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '15px', fontWeight: 'bold', display: 'block', width: '100%' },
     addBtn: { backgroundColor: '#2ecc71', color: '#fff', padding: '8px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer', marginBottom: '15px', fontWeight: 'bold' },
     list: { display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' },
-    listItem: { display: 'flex', gap: '15px', alignItems: 'center', border: '1px solid #eee', padding: '10px', borderRadius: '8px', backgroundColor: '#fafafa' },
+    listItem: { display: 'flex', gap: '15px', alignItems: 'center', border: '1px solid #eee', padding: '15px', borderRadius: '8px', backgroundColor: '#fafafa', flexWrap: 'wrap' },
     moveBtnsColumn: { display: 'flex', flexDirection: 'column', gap: '2px', marginRight: '8px' },
     moveBtnSmall: { padding: '2px 6px', fontSize: '10px', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ddd' },
     previewSmall: { width: '50px', height: '50px', overflow: 'hidden', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#eee' },
-    inputSmall: { width: '100%', padding: '6px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '13px' },
+    inputSmall: { width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '15px' },
     deleteBtn: { backgroundColor: '#e74c3c', color: '#fff', padding: '6px 10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' },
     pinBtn: { backgroundColor: '#95a5a6', color: '#fff', padding: '6px 10px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' },
     backupBtn: { backgroundColor: '#3498db', color: '#fff', padding: '8px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' },

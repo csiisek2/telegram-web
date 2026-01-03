@@ -13,7 +13,11 @@ const RightSidebar = () => {
                 <div
                     key={banner.id}
                     style={banner.image ? { ...styles.bannerItem, padding: 0, overflow: 'hidden' } : styles.bannerItem}
-                    onClick={() => banner.link ? window.open(banner.link, '_blank') : null}
+                    onClick={() => {
+                        // 이미지가 있으면 배너에 등록된 링크로, 없으면 기본 링크로
+                        const targetLink = banner.image ? banner.link : 'https://t.me/ehtkf';
+                        if (targetLink) window.open(targetLink, '_blank');
+                    }}
                 >
                     {banner.image ? (
                         (banner.image.startsWith('data:video') || banner.image.toLowerCase().match(/\.(mp4|webm|mov)$/)) ? (
@@ -30,8 +34,8 @@ const RightSidebar = () => {
                         )
                     ) : (
                         <div style={styles.bannerContent}>
-                            <h3 style={styles.inquiryText}>{banner.title}</h3>
-                            <p style={styles.subText}>{banner.text}</p>
+                            <h3 style={styles.inquiryText}>배너 문의</h3>
+                            <p style={styles.subText}>@xdev90</p>
                         </div>
                     )}
                 </div>
@@ -42,14 +46,16 @@ const RightSidebar = () => {
 
 const styles = {
     sidebar: {
-        width: '180px',
+        width: '220px',
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
+        overflow: 'visible',
     },
     bannerItem: {
-        height: '240px',
+        width: '240px',
+        height: '300px',
         backgroundColor: '#f5f5f5',
         border: '2px solid #0088cc',
         borderRadius: '8px',

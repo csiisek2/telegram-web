@@ -1,16 +1,10 @@
 import React from 'react';
 import LoginBox from './LoginBox';
-import { siteConfigStore } from '../data/mockData';
+import { useSiteData } from '../context/SiteDataContext';
 
 const Sidebar = () => {
-    const [banners, setBanners] = React.useState(siteConfigStore.getBanners());
-
-    React.useEffect(() => {
-        const unsubscribe = siteConfigStore.subscribe(() => {
-            setBanners([...siteConfigStore.getBanners()]);
-        });
-        return () => unsubscribe();
-    }, []);
+    const { data } = useSiteData();
+    const banners = data.banners;
 
     const categories = [
         '비트코인/가상화폐', '주식/재테크',
@@ -22,12 +16,16 @@ const Sidebar = () => {
         <aside style={styles.sidebar}>
             <LoginBox />
 
-            {/* 3 Side Banners */}
+            {/* Side Banners */}
             {banners.map((banner, index) => (
                 <div
-                    key={index}
-                    style={banner.image ? { ...styles.sideBanner, padding: 0, overflow: 'hidden' } : styles.sideBanner}
-                    onClick={() => banner.link ? window.open(banner.link, '_blank') : null}
+                    key={banner.id || index}
+                    style={banner.image ? styles.sideBannerWithImage : styles.sideBanner}
+                    onClick={() => {
+                        // 이미지가 있으면 배너에 등록된 링크로, 없으면 기본 링크로
+                        const targetLink = banner.image ? banner.link : 'https://t.me/ehtkf';
+                        if (targetLink) window.open(targetLink, '_blank');
+                    }}
                 >
                     {banner.image ? (
                         (banner.image.startsWith('data:video') || banner.image.toLowerCase().match(/\.(mp4|webm|mov)$/)) ? (
@@ -44,8 +42,8 @@ const Sidebar = () => {
                         )
                     ) : (
                         <>
-                            <div style={styles.bannerTitle}>{banner.title}</div>
-                            <p style={styles.bannerText}>{banner.text}</p>
+                            <div style={styles.bannerTitle}>배너 문의</div>
+                            <p style={styles.bannerText}>@xdev90</p>
                         </>
                     )}
                 </div>
@@ -81,7 +79,7 @@ const styles = {
         color: '#fff',
         textAlign: 'center',
         cursor: 'pointer',
-        height: '100px',
+        minHeight: '100px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -89,10 +87,24 @@ const styles = {
         border: '2px solid #0088cc',
         boxShadow: '0 2px 4px rgba(0, 136, 204, 0.1)',
     },
+    sideBannerWithImage: {
+        borderRadius: '8px',
+        overflow: 'hidden',
+        cursor: 'pointer',
+        border: '2px solid #0088cc',
+        boxShadow: '0 2px 4px rgba(0, 136, 204, 0.1)',
+        backgroundColor: '#f5f5f5',
+        minHeight: '250px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     bannerImage: {
         width: '100%',
-        height: '100%',
-        objectFit: 'cover',
+        height: 'auto',
+        minHeight: '250px',
+        objectFit: 'contain',
+        display: 'block',
     },
     bannerTitle: {
         fontWeight: 'bold',

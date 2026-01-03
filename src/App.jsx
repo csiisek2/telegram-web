@@ -23,43 +23,48 @@ function App() {
       <AuthProvider>
         <SiteDataProvider>
           <Router>
-          <div className="app">
-            <SEO />
-            <Header />
-            <AuthModal />
+            <div className="app">
+              <SEO />
+              <Header />
+              <AuthModal />
 
-            {/* 3-Column Layout Container */}
-            <div style={styles.mainContainer}>
+              {/* 3-Column Layout Container */}
+              <div style={styles.mainContainer}>
 
-              {/* Left Sidebar (Login & Banners) */}
-              <div className="mobile-hide" style={{ position: 'sticky', top: '20px', alignSelf: 'flex-start' }}>
-                <Sidebar />
+                {/* Left Sidebar (Login & Banners) */}
+                <div className="mobile-hide sidebar-sticky" style={{
+                  position: 'sticky',
+                  top: '20px',
+                  alignSelf: 'flex-start',
+                  transition: 'transform 0.3s ease-out'
+                }}>
+                  <Sidebar />
+                </div>
+
+                {/* Center Main Content */}
+                <main style={styles.contentArea}>
+                  <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>로딩 중...</div>}>
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/free" element={<FreeBoardPage />} />
+                      <Route path="/free/write" element={<WritePage category="free" />} />
+                      <Route path="/scammer" element={<ScammerBoardPage />} />
+                      <Route path="/scammer/write" element={<WritePage category="scammer" />} />
+                      <Route path="/isc8806" element={<AdminPage />} />
+                    </Routes>
+                  </Suspense>
+                </main>
+
+                {/* Right Sidebar (Ads) */}
+                <div className="mobile-hide" style={{ position: 'sticky', top: '20px', alignSelf: 'flex-start' }}>
+                  <RightSidebar />
+                </div>
+
               </div>
 
-              {/* Center Main Content */}
-              <main style={styles.contentArea}>
-                <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>로딩 중...</div>}>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/free" element={<FreeBoardPage />} />
-                    <Route path="/free/write" element={<WritePage category="free" />} />
-                    <Route path="/scammer" element={<ScammerBoardPage />} />
-                    <Route path="/scammer/write" element={<WritePage category="scammer" />} />
-                    <Route path="/isc8806" element={<AdminPage />} />
-                  </Routes>
-                </Suspense>
-              </main>
-
-              {/* Right Sidebar (Ads) */}
-              <div className="mobile-hide" style={{ position: 'sticky', top: '20px', alignSelf: 'flex-start' }}>
-                <RightSidebar />
-              </div>
-
+              <Footer />
             </div>
-
-            <Footer />
-          </div>
-        </Router>
+          </Router>
         </SiteDataProvider>
       </AuthProvider>
     </HelmetProvider>

@@ -8,25 +8,6 @@ const Footer = () => {
     return (
         <footer style={styles.footer}>
             <div className="container">
-                {/* Power Links Section */}
-                {!loading && powerLinks.length > 0 && (
-                    <div style={styles.powerLinksSection}>
-                        <h3 style={styles.sectionTitle}>파워링크</h3>
-                        <div style={styles.powerLinksGrid}>
-                            {powerLinks.map((link) => (
-                                <a
-                                    key={link.id}
-                                    href={link.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={styles.powerLink}
-                                >
-                                    {link.name}
-                                </a>
-                            ))}
-                        </div>
-                    </div>
-                )}
 
                 <div style={styles.links}>
                     <a href="#" style={styles.link}>이용약관</a>

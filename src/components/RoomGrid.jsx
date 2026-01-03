@@ -114,7 +114,11 @@ const RoomGrid = () => {
                         <div
                             key={room.id}
                             style={styles.card}
-                            onClick={() => room.link ? window.open(room.link, '_blank') : null}
+                            onClick={() => {
+                                // 이미지가 있으면 등록된 링크로, 없으면 기본 링크로
+                                const targetLink = room.image ? room.link : 'https://t.me/ehtkf';
+                                if (targetLink) window.open(targetLink, '_blank');
+                            }}
                         >
                             {room.isPinned && <span style={styles.badge}>추천업체</span>}
                             {room.image ? (
@@ -126,13 +130,13 @@ const RoomGrid = () => {
                                     )}
                                 </div>
                             ) : (
-                                <div style={{ ...styles.imagePlaceholder, backgroundColor: room.imageColor }}>
-                                    <span style={{ color: '#fff', fontSize: '24px' }}>IMG</span>
+                                <div style={{ ...styles.imagePlaceholder, backgroundColor: room.imageColor || '#74b9ff' }}>
+                                    <span style={{ color: '#fff', fontSize: '14px', textAlign: 'center' }}>배너 문의<br />@xdev90</span>
                                 </div>
                             )}
                             <div style={styles.content}>
-                                <h3 style={styles.name}>{room.name}</h3>
-                                <p style={styles.desc}>{room.desc}</p>
+                                <h3 style={styles.name}>{room.image ? room.name : '입점 문의'}</h3>
+                                <p style={styles.desc}>{room.image ? room.desc : '@xdev90'}</p>
                                 <div style={styles.meta}>
                                     <span>👤 {room.members.toLocaleString()}명</span>
                                 </div>
