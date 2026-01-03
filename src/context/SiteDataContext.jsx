@@ -33,26 +33,30 @@ export const SiteDataProvider = ({ children }) => {
     useEffect(() => {
         const loadAllData = async () => {
             try {
-                setLoading(true);
+                // 1단계: 가장 중요한 rooms만 먼저 로드 (즉시 표시)
+                const roomsData = await getRooms();
+                setData(prev => ({
+                    ...prev,
+                    rooms: convertRoomsFromDB(roomsData)
+                }));
+                setLoading(false); // 메인 콘텐츠 로딩 완료
 
-                // 모든 데이터를 병렬로 한 번에 로드
-                const [bannersData, roomsData, rightBannersData, powerLinksData] = await Promise.all([
+                // 2단계: 나머지 데이터를 병렬로 백그라운드 로드
+                const [bannersData, rightBannersData, powerLinksData] = await Promise.all([
                     getBanners(),
-                    getRooms(),
                     getRightBanners(),
                     getPowerLinks()
                 ]);
 
-                setData({
+                setData(prev => ({
+                    ...prev,
                     banners: convertBannersFromDB(bannersData),
-                    rooms: convertRoomsFromDB(roomsData),
                     rightBanners: convertRightBannersFromDB(rightBannersData),
                     powerLinks: convertPowerLinksFromDB(powerLinksData).sort((a, b) => b.id - a.id)
-                });
+                }));
             } catch (err) {
                 console.error('데이터 로드 실패:', err);
                 setError(err);
-            } finally {
                 setLoading(false);
             }
         };

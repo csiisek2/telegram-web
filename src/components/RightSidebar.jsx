@@ -26,7 +26,7 @@ const RightSidebar = () => {
                                 style={styles.bannerImage}
                             />
                         ) : (
-                            <img src={banner.image} alt={banner.title} style={styles.bannerImage} />
+                            <img src={banner.image} alt={banner.title} style={styles.bannerImage} loading="lazy" />
                         )
                     ) : (
                         <div style={styles.bannerContent}>

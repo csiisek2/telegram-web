@@ -40,7 +40,7 @@ const Sidebar = () => {
                                 style={styles.bannerImage}
                             />
                         ) : (
-                            <img src={banner.image} alt={banner.title} style={styles.bannerImage} />
+                            <img src={banner.image} alt={banner.title} style={styles.bannerImage} loading="lazy" />
                         )
                     ) : (
                         <>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSiteData } from '../context/SiteDataContext';
+import { RoomGridSkeleton } from './LoadingSkeleton';
 
 const RoomGrid = () => {
     const [searchParams] = useSearchParams();
@@ -78,6 +79,16 @@ const RoomGrid = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    // 로딩 중이면 스켈레톤 표시
+    if (loading) {
+        return (
+            <div className="container" style={{ marginTop: '20px', marginBottom: '40px' }}>
+                <div className="section-title">추천 홍보방</div>
+                <RoomGridSkeleton />
+            </div>
+        );
+    }
+
     return (
         <div className="container" style={{ marginTop: '20px', marginBottom: '40px' }}>
             <div style={styles.titleContainer}>
@@ -109,7 +120,7 @@ const RoomGrid = () => {
                                     {room.image.startsWith('data:video') ? (
                                         <video src={room.image} autoPlay loop muted playsInline style={styles.image} />
                                     ) : (
-                                        <img src={room.image} alt={room.name} style={styles.image} />
+                                        <img src={room.image} alt={room.name} style={styles.image} loading="lazy" />
                                     )}
                                 </div>
                             ) : (
