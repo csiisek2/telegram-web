@@ -50,9 +50,17 @@ export const AuthProvider = ({ children }) => {
         try {
             // IndexedDB에 저장 (로그인용)
             const user = await userStorage.register(userData);
+            console.log('IndexedDB 저장 성공:', user);
 
             // Supabase에도 저장 (관리자 페이지용)
-            const { error: supabaseError } = await supabase
+            console.log('Supabase 저장 시도:', {
+                login_id: userData.id,
+                nickname: userData.nickname,
+                telegram_id: userData.telegramId,
+                username: userData.telegramId
+            });
+
+            const { data: insertedData, error: supabaseError } = await supabase
                 .from('users')
                 .insert([
                     {
@@ -63,11 +71,14 @@ export const AuthProvider = ({ children }) => {
                         username: userData.telegramId,
                         is_active: true
                     }
-                ]);
+                ])
+                .select();
 
             if (supabaseError) {
-                console.error('Supabase save error:', supabaseError);
-                // Supabase 저장 실패해도 IndexedDB는 성공했으므로 계속 진행
+                console.error('❌ Supabase 저장 실패:', supabaseError);
+                alert(`회원가입은 성공했지만 관리자 데이터베이스 저장 실패: ${supabaseError.message}`);
+            } else {
+                console.log('✅ Supabase 저장 성공:', insertedData);
             }
 
             // 회원가입 후 자동 로그인
@@ -77,6 +88,7 @@ export const AuthProvider = ({ children }) => {
             setAuthModalOpen(false);
             return { success: true };
         } catch (error) {
+            console.error('회원가입 전체 실패:', error);
             return { success: false, error: error.message };
         }
     };
