@@ -16,14 +16,19 @@ const LoginBox = () => {
     const fetchPartnershipInfo = async () => {
         setLoading(true);
         try {
+            console.log('🔍 제휴 정보 조회 시작:', currentUser);
+            console.log('🔍 조회할 login_id:', currentUser.id);
+
             const { data, error } = await supabase
                 .from('users')
-                .select('partnership_expires_at')
+                .select('*')
                 .eq('login_id', currentUser.id)
                 .single();
 
+            console.log('📊 조회 결과:', { data, error });
+
             if (error) {
-                console.error('Partnership fetch error:', error);
+                console.error('❌ Partnership fetch error:', error);
                 setPartnershipDays(null);
                 setLoading(false);
                 return;
@@ -34,16 +39,23 @@ const LoginBox = () => {
                 const now = new Date();
                 const daysLeft = Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24));
 
+                console.log('📅 제휴 만료일:', expiresAt);
+                console.log('📅 현재 시간:', now);
+                console.log('📅 남은 일수:', daysLeft);
+
                 if (daysLeft > 0) {
                     setPartnershipDays(daysLeft);
+                    console.log('✅ 제휴 기간 설정됨:', daysLeft);
                 } else {
                     setPartnershipDays(null);
+                    console.log('⏰ 제휴 기간 만료됨');
                 }
             } else {
                 setPartnershipDays(null);
+                console.log('ℹ️ 제휴 정보 없음');
             }
         } catch (error) {
-            console.error('Partnership fetch error:', error);
+            console.error('❌ Partnership fetch error:', error);
         } finally {
             setLoading(false);
         }
