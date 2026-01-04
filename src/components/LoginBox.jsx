@@ -19,10 +19,15 @@ const LoginBox = () => {
             const { data, error } = await supabase
                 .from('users')
                 .select('partnership_expires_at')
-                .eq('id', currentUser.id)
+                .eq('login_id', currentUser.id)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Partnership fetch error:', error);
+                setPartnershipDays(null);
+                setLoading(false);
+                return;
+            }
 
             if (data?.partnership_expires_at) {
                 const expiresAt = new Date(data.partnership_expires_at);
